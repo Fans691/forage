@@ -23,8 +23,8 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = "com.fans691.forage.repository")
-@ComponentScan(basePackages = "com.fans691.forage.service")
+@EnableJpaRepositories(basePackages = "com.forage.forage.repository")
+@ComponentScan(basePackages = "com.forage.forage.service")
 @PropertySource("classpath:application.properties")
 public class RootConfig {
 
@@ -56,7 +56,7 @@ public class RootConfig {
         LocalContainerEntityManagerFactoryBean factoryBean = new LocalContainerEntityManagerFactoryBean();
         factoryBean.setDataSource(dataSource);
         factoryBean.setJpaVendorAdapter(jpaVendorAdapter);
-        factoryBean.setPackagesToScan("com.fans691.forage.domain");
+        factoryBean.setPackagesToScan("com.forage.forage.model");
 
         Properties properties = new Properties();
         properties.put(AvailableSettings.HBM2DDL_AUTO, "update");
