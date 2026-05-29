@@ -1,4 +1,4 @@
-package com.fans691.forage.config;
+package com.forage.forage.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
