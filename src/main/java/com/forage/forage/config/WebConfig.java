@@ -13,7 +13,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.fans691.forage.controller")
+@ComponentScan(basePackages = "com.forage.forage.controller")
 public class WebConfig {
 
     @Bean
