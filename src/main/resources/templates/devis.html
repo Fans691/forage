@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devis</title>
+</head>
+<body>
+<h1>Devis de la demande</h1>
+
+<section>
+    <h2>Demande</h2>
+    <p>
+        <strong>Client:</strong>
+        <span th:text="${demande.client.nom}">Client</span>
+    </p>
+    <p>
+        <strong>Lieu:</strong>
+        <span th:text="${demande.lieu}">Lieu</span>
+    </p>
+    <p>
+        <strong>Date:</strong>
+        <span th:text="${demande.dateDemande}">Date</span>
+    </p>
+</section>
+
+<section>
+    <h2>Liste des devis</h2>
+    <ul>
+        <li th:each="devis : ${devisList}">
+            <span th:text="${devis.description}">Objet</span> -
+            <span th:text="${devis.montant}">0</span>
+        </li>
+    </ul>
+</section>
+
+<p>
+    <a th:href="@{/demandes/{id}/devis/nouveau(id=${demande.id})}">Ajouter un devis</a>
+</p>
+<p><a th:href="@{/demandes}">Retour a la liste</a></p>
+</body>
+</html>

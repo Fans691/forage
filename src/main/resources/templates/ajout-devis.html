@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau devis</title>
+</head>
+<body>
+<h1>Nouveau devis</h1>
+
+<p th:if="${message}" th:text="${message}">Message</p>
+
+<section>
+    <h2>Demande</h2>
+    <p>
+        <strong>Client:</strong>
+        <span th:text="${demande.client.nom}">Client</span>
+    </p>
+    <p>
+        <strong>Lieu:</strong>
+        <span th:text="${demande.lieu}">Lieu</span>
+    </p>
+    <p>
+        <strong>Date:</strong>
+        <span th:text="${demande.dateDemande}">Date</span>
+    </p>
+</section>
+
+<section>
+    <h2>Devis existants</h2>
+    <ul>
+        <li th:if="${#lists.isEmpty(devisList)}">Aucun devis pour le moment.</li>
+        <li th:each="devis : ${devisList}">
+            <span th:text="${devis.description}">Objet</span> -
+            <span th:text="${devis.montant}">0</span>
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>Ajouter des lignes</h2>
+    <form th:action="@{/demandes/{id}/devis(id=${demande.id})}" method="post">
+        <div id="lignes">
+            <div class="ligne">
+                <label>Objet
+                    <input type="text" name="objet" required>
+                </label>
+                <label>Montant
+                    <input type="number" name="montant" step="0.01" required>
+                </label>
+            </div>
+        </div>
+        <button type="button" id="ajouter">Ajouter une ligne</button>
+        <button type="submit">Enregistrer le devis</button>
+    </form>
+</section>
+
+<p><a th:href="@{/demandes}">Retour a la liste</a></p>
+
+<script>
+    const container = document.getElementById('lignes');
+    const addButton = document.getElementById('ajouter');
+
+    addButton.addEventListener('click', () => {
+        const line = document.createElement('div');
+        line.className = 'ligne';
+        line.innerHTML = '\n            <label>Objet\n                <input type="text" name="objet" required>\n            </label>\n            <label>Montant\n                <input type="number" name="montant" step="0.01" required>\n            </label>\n        ';
+        container.appendChild(line);
+    });
+</script>
+</body>
+</html>

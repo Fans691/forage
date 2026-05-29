@@ -3,11 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forage</title>
+    <title>Forage - Accueil</title>
 </head>
 <body>
 <h1>Forage</h1>
-<p>Squelette Spring MVC prêt pour PostgreSQL.</p>
-<p><a th:href="@{/notes}">Voir les notes</a></p>
+
+<p th:if="${message}" th:text="${message}">Message</p>
+
+<section>
+    <h2>Nouvelle demande</h2>
+    <form th:action="@{/demande}" method="post">
+        <label for="clientId">Client</label>
+        <select id="clientId" name="clientId" required>
+            <option value="" disabled selected>Choisir un client</option>
+            <option th:each="client : ${clients}"
+                    th:value="${client.id}"
+                    th:text="${client.nom}">Client</option>
+        </select>
+
+        <label for="regionId">Region</label>
+        <select id="regionId" name="regionId" required>
+            <option value="" disabled selected>Choisir une region</option>
+            <option th:each="region : ${regions}"
+                    th:value="${region.id}"
+                    th:text="${region.libelle}">Region</option>
+        </select>
+
+        <label for="districtId">District</label>
+        <select id="districtId" name="districtId" required disabled>
+            <option value="" disabled selected>Choisir un district</option>
+        </select>
+
+        <label for="communeId">Commune</label>
+        <select id="communeId" name="communeId" required disabled>
+            <option value="" disabled selected>Choisir une commune</option>
+        </select>
+
+        <label for="dateDemande">Date de demande</label>
+        <input type="date" id="dateDemande" name="dateDemande" required>
+
+        <label for="lieu">Lieu</label>
+        <input type="text" id="lieu" name="lieu" required>
+
+        <button type="submit">Envoyer la demande</button>
+    </form>
+</section>
+
+<section>
+    <p><a th:href="@{/demandes}">Voir la liste des demandes</a></p>
+</section>
+
+<script>
+    const regionSelect = document.getElementById('regionId');
+    const districtSelect = document.getElementById('districtId');
+    const communeSelect = document.getElementById('communeId');
+
+    function resetSelect(select, placeholder) {
+        select.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.disabled = true;
+        option.selected = true;
+        option.textContent = placeholder;
+        select.appendChild(option);
+        select.disabled = true;
+    }
+
+    function populateSelect(select, items, placeholder) {
+        resetSelect(select, placeholder);
+        items.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.libelle;
+            select.appendChild(option);
+        });
+        select.disabled = false;
+    }
+
+    regionSelect.addEventListener('change', async () => {
+        const regionId = regionSelect.value;
+        resetSelect(districtSelect, 'Choisir un district');
+        resetSelect(communeSelect, 'Choisir une commune');
+
+        if (!regionId) return;
+
+        const response = await fetch('/district', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ regionId })
+        });
+
+        if (response.ok) {
+            const districts = await response.json();
+            populateSelect(districtSelect, districts, 'Choisir un district');
+        }
+    });
+
+    districtSelect.addEventListener('change', async () => {
+        const districtId = districtSelect.value;
+        resetSelect(communeSelect, 'Choisir une commune');
+
+        if (!districtId) return;
+
+        const response = await fetch('/commune', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ districtId })
+        });
+
+        if (response.ok) {
+            const communes = await response.json();
+            populateSelect(communeSelect, communes, 'Choisir une commune');
+        }
+    });
+</script>
 </body>
 </html>

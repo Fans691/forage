@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandes</title>
+</head>
+<body>
+<h1>Liste des demandes</h1>
+
+<p th:if="${message}" th:text="${message}">Message</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Commune</th>
+            <th>District</th>
+            <th>Region</th>
+            <th>Date</th>
+            <th>Lieu</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:if="${#lists.isEmpty(demandes)}">
+            <td colspan="9">Aucune demande pour le moment.</td>
+        </tr>
+        <tr th:each="demande : ${demandes}">
+            <td th:text="${demande.id}">1</td>
+            <td th:text="${demande.client.nom}">Client</td>
+            <td th:text="${demande.commune.libelle}">Commune</td>
+            <td th:text="${demande.commune.district.libelle}">District</td>
+            <td th:text="${demande.commune.district.region.libelle}">Region</td>
+            <td th:text="${demande.dateDemande}">2026-05-29</td>
+            <td th:text="${demande.lieu}">Lieu</td>
+            <td th:text="${demande.statutActuelLibelle}">Statut</td>
+            <td>
+                <a th:href="@{/demandes/{id}/edit(id=${demande.id})}">Editer</a>
+                <form th:action="@{/demandes/{id}/delete(id=${demande.id})}" method="post" style="display:inline;">
+                    <button type="submit">Supprimer</button>
+                </form>
+                <form th:action="@{/demandes/{id}/valider(id=${demande.id})}" method="post" style="display:inline;">
+                    <button type="submit">Valider</button>
+                </form>
+                <form th:action="@{/demandes/{id}/refuser(id=${demande.id})}" method="post" style="display:inline;">
+                    <button type="submit">Refuser</button>
+                </form>
+                <a th:if="${devisDemandeIds.contains(demande.id)}" th:href="@{/demandes/{id}/devis(id=${demande.id})}">Voir devis</a>
+                <a th:if="${!devisDemandeIds.contains(demande.id)}" th:href="@{/demandes/{id}/devis/nouveau(id=${demande.id})}">Nouveau devis</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p><a th:href="@{/}">Retour a l'accueil</a></p>
+</body>
+</html>

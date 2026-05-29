@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier une demande</title>
+</head>
+<body>
+<h1>Modifier une demande</h1>
+
+<form th:action="@{/demandes/{id}/update(id=${demande.id})}" method="post">
+    <label for="clientId">Client</label>
+    <select id="clientId" name="clientId" required>
+        <option value="" disabled>Choisir un client</option>
+        <option th:each="client : ${clients}"
+                th:value="${client.id}"
+                th:selected="${client.id == demande.client.id}"
+                th:text="${client.nom}">Client</option>
+    </select>
+
+    <label for="regionId">Region</label>
+    <select id="regionId" name="regionId" required>
+        <option value="" disabled>Choisir une region</option>
+        <option th:each="region : ${regions}"
+                th:value="${region.id}"
+                th:selected="${region.id == demande.commune.district.region.id}"
+                th:text="${region.libelle}">Region</option>
+    </select>
+
+    <label for="districtId">District</label>
+    <select id="districtId" name="districtId" required disabled
+            th:attr="data-selected-id=${demande.commune.district.id}">
+        <option value="" disabled selected>Choisir un district</option>
+    </select>
+
+    <label for="communeId">Commune</label>
+    <select id="communeId" name="communeId" required disabled
+            th:attr="data-selected-id=${demande.commune.id}">
+        <option value="" disabled selected>Choisir une commune</option>
+    </select>
+
+    <label for="dateDemande">Date de demande</label>
+    <input type="date" id="dateDemande" name="dateDemande" th:value="${demande.dateDemande}" required>
+
+    <label for="lieu">Lieu</label>
+    <input type="text" id="lieu" name="lieu" th:value="${demande.lieu}" required>
+
+    <button type="submit">Enregistrer</button>
+</form>
+
+<p><a th:href="@{/demandes}">Retour a la liste</a></p>
+
+<script>
+    const regionSelect = document.getElementById('regionId');
+    const districtSelect = document.getElementById('districtId');
+    const communeSelect = document.getElementById('communeId');
+
+    function resetSelect(select, placeholder) {
+        select.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.disabled = true;
+        option.selected = true;
+        option.textContent = placeholder;
+        select.appendChild(option);
+        select.disabled = true;
+    }
+
+    function populateSelect(select, items, placeholder, selectedId) {
+        resetSelect(select, placeholder);
+        items.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.libelle;
+            if (selectedId && String(item.id) === String(selectedId)) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        select.disabled = false;
+    }
+
+    async function loadDistricts(regionId, selectedDistrictId) {
+        resetSelect(districtSelect, 'Choisir un district');
+        resetSelect(communeSelect, 'Choisir une commune');
+
+        if (!regionId) return;
+
+        const response = await fetch('/district', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ regionId })
+        });
+
+        if (response.ok) {
+            const districts = await response.json();
+            populateSelect(districtSelect, districts, 'Choisir un district', selectedDistrictId);
+        }
+    }
+
+    async function loadCommunes(districtId, selectedCommuneId) {
+        resetSelect(communeSelect, 'Choisir une commune');
+
+        if (!districtId) return;
+
+        const response = await fetch('/commune', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ districtId })
+        });
+
+        if (response.ok) {
+            const communes = await response.json();
+            populateSelect(communeSelect, communes, 'Choisir une commune', selectedCommuneId);
+        }
+    }
+
+    regionSelect.addEventListener('change', () => {
+        loadDistricts(regionSelect.value, null);
+    });
+
+    districtSelect.addEventListener('change', () => {
+        loadCommunes(districtSelect.value, null);
+    });
+
+    const initialRegionId = regionSelect.value;
+    const initialDistrictId = districtSelect.getAttribute('data-selected-id');
+    const initialCommuneId = communeSelect.getAttribute('data-selected-id');
+
+    if (initialRegionId) {
+        loadDistricts(initialRegionId, initialDistrictId).then(() => {
+            if (initialDistrictId) {
+                loadCommunes(initialDistrictId, initialCommuneId);
+            }
+        });
+    }
++</script>
+</body>
+</html>
