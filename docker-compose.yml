@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: forage-postgres
+    environment:
+      POSTGRES_DB: forage
+      POSTGRES_USER: fans
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - forage_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  forage_postgres_data:

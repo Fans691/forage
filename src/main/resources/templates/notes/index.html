@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+</head>
+<body>
+<h1>Notes</h1>
+<ul>
+    <li th:if="${#lists.isEmpty(notes)}">Aucune note enregistrée pour le moment.</li>
+    <li th:each="note : ${notes}">
+        <strong th:text="${note.title}">Titre</strong>
+        <span th:text="${note.content}">Contenu</span>
+    </li>
+</ul>
+<p><a th:href="@{/}">Retour à l'accueil</a></p>
+</body>
+</html>
