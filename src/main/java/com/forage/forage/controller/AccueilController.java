@@ -1,6 +1,8 @@
 package com.forage.forage.controller;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +66,23 @@ public class AccueilController {
 		return "nouveau-devis";
 	}
 
+    @GetMapping("/devis/nouveau/ref")
+    public String nouveauDevisParReference(@RequestParam("ref") String ref, RedirectAttributes redirectAttributes) {
+        Long demandeId = parseDemandeIdFromReference(ref);
+        if (demandeId == null) {
+            redirectAttributes.addFlashAttribute("message", "Reference invalide.");
+            return "redirect:/devis/nouveau";
+        }
+
+        Demande demande = ds.getDemandeById(demandeId);
+        if (demande == null) {
+            redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
+            return "redirect:/devis/nouveau";
+        }
+
+        return "redirect:/demandes/" + demandeId + "/devis/nouveau";
+    }
+
     @GetMapping("/demandes/{id}/edit")
     public String editDemande(@PathVariable Long id, Model model) {
         Demande demande = ds.getDemandeById(id);
@@ -83,6 +102,7 @@ public class AccueilController {
             @RequestParam("clientId") Long clientId,
             @RequestParam("communeId") Long communeId,
             @RequestParam("dateDemande") LocalDate dateDemande,
+            @RequestParam("timeDemande") String timeDemande,
             @RequestParam("lieu") String lieu,
             RedirectAttributes redirectAttributes) {
         Client client = cs.findById(clientId);
@@ -93,7 +113,7 @@ public class AccueilController {
             return "redirect:/";
         }
 
-        ds.createDemande(client, commune, dateDemande, lieu);
+        ds.createDemande(client, commune, buildDateTime(dateDemande, timeDemande), lieu);
         redirectAttributes.addFlashAttribute("message", "Demande envoyée avec succès.");
         return "redirect:/demandes";
     }
@@ -104,6 +124,7 @@ public class AccueilController {
             @RequestParam("clientId") Long clientId,
             @RequestParam("communeId") Long communeId,
             @RequestParam("dateDemande") LocalDate dateDemande,
+            @RequestParam("timeDemande") String timeDemande,
             @RequestParam("lieu") String lieu,
             RedirectAttributes redirectAttributes) {
         Client client = cs.findById(clientId);
@@ -114,7 +135,7 @@ public class AccueilController {
             return "redirect:/demandes";
         }
 
-        Demande demande = ds.updateDemande(id, client, commune, dateDemande, lieu);
+        Demande demande = ds.updateDemande(id, client, commune, buildDateTime(dateDemande, timeDemande), lieu);
 
         if (demande == null) {
             redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
@@ -243,6 +264,29 @@ public class AccueilController {
                         "id", commune.getId(),
                         "libelle", commune.getLibelle()))
                 .toList();
+    }
+
+    private LocalDateTime buildDateTime(LocalDate dateDemande, String timeDemande) {
+        LocalTime time = LocalTime.MIDNIGHT;
+        if (timeDemande != null && !timeDemande.isBlank()) {
+            try {
+                time = LocalTime.parse(timeDemande);
+            } catch (Exception ex) {
+                time = LocalTime.MIDNIGHT;
+            }
+        }
+        return LocalDateTime.of(dateDemande, time);
+    }
+
+    private Long parseDemandeIdFromReference(String ref) {
+        if (ref == null) return null;
+        String digits = ref.replaceAll("\\D+", "");
+        if (digits.isBlank()) return null;
+        try {
+            return Long.parseLong(digits);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     

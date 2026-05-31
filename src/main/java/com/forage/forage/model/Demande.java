@@ -2,6 +2,8 @@ package com.forage.forage.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -26,7 +28,7 @@ public class Demande {
 	private String description;
 
 	@Column(name = "date_demande", nullable = false)
-	private LocalDate dateDemande;
+	private LocalDateTime dateDemande;
 
 	@Column(name = "lieu", nullable = false)
 	private String lieu;
@@ -36,7 +38,7 @@ public class Demande {
 
 	public Demande() {}
 
-	public Demande(Client client, Commune commune, String description, LocalDate dateDemande, String lieu) {
+	public Demande(Client client, Commune commune, String description, LocalDateTime dateDemande, String lieu) {
 		this.client = client;
 		this.commune = commune;
 		this.description = description;
@@ -48,7 +50,7 @@ public class Demande {
 	public Client getClient() {return client;}
 	public Commune getCommune() {return commune;}
 	public String getDescription() {return description;}
-	public LocalDate getDateDemande() {return dateDemande;}
+	public LocalDateTime getDateDemande() {return dateDemande;}
 	public String getLieu() {return lieu;}
 	public List<DemandeStatut> getDemandeStatuts() {return demandeStatuts;}
 	@Transient
@@ -70,10 +72,21 @@ public class Demande {
 		return String.format("DM%03d", id);
 	}
 
+	@Transient
+	public LocalDate getDateDemandeDate() {
+		return dateDemande != null ? dateDemande.toLocalDate() : null;
+	}
+
+	@Transient
+	public String getDateDemandeTime() {
+		if (dateDemande == null) return "";
+		return dateDemande.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+	}
+
 	public void setClient(Client client) {this.client = client;}
 	public void setCommune(Commune commune) {this.commune = commune;}
 	public void setDescription(String description) {this.description = description;}
-	public void setDateDemande(LocalDate dateDemande) {this.dateDemande = dateDemande;}
+	public void setDateDemande(LocalDateTime dateDemande) {this.dateDemande = dateDemande;}
 	public void setLieu(String lieu) {this.lieu = lieu;}
 	public void setDemandeStatuts(List<DemandeStatut> demandeStatuts) {this.demandeStatuts = demandeStatuts;}
 }

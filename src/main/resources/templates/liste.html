@@ -36,7 +36,7 @@
             <td th:text="${demande.commune.libelle}">Commune</td>
             <td th:text="${demande.commune.district.libelle}">District</td>
             <td th:text="${demande.commune.district.region.libelle}">Region</td>
-            <td th:text="${demande.dateDemande}">2026-05-29</td>
+            <td th:text="${#temporals.format(demande.dateDemande, 'yyyy-MM-dd HH:mm')}">2026-05-29 10:30</td>
             <td th:text="${demande.lieu}">Lieu</td>
             <td th:text="${demande.statutActuelLibelle}">Statut</td>
             <td>

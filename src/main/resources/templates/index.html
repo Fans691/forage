@@ -42,6 +42,9 @@
         <label for="dateDemande">Date de demande</label>
         <input type="date" id="dateDemande" name="dateDemande" required>
 
+        <label for="timeDemande">Heure</label>
+        <input type="time" id="timeDemande" name="timeDemande" required>
+
         <label for="lieu">Lieu</label>
         <input type="text" id="lieu" name="lieu" required>
 
@@ -50,6 +53,7 @@
 </section>
 
 <section>
+    <p><a th:href="@{/devis/nouveau}">Creer un devis</a></p>
     <p><a th:href="@{/demandes}">Voir la liste des demandes</a></p>
 </section>
 

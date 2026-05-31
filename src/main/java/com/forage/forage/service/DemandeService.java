@@ -1,6 +1,5 @@
 package com.forage.forage.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class DemandeService {
     }
 
     @Transactional
-    public Demande updateDemande(Long id, Client client, Commune commune, LocalDate dateDemande, String lieu) {
+    public Demande updateDemande(Long id, Client client, Commune commune, LocalDateTime dateDemande, String lieu) {
         Demande demande = getDemandeById(id);
 
         if (demande == null) {
@@ -65,7 +64,7 @@ public class DemandeService {
     }
 
     @Transactional
-    public Demande createDemande(Client client, Commune commune, LocalDate dateDemande, String lieu) {
+    public Demande createDemande(Client client, Commune commune, LocalDateTime dateDemande, String lieu) {
         Demande demande = new Demande(client, commune, "", dateDemande, lieu);
         Demande savedDemande = dr.save(demande);
         enregistrerStatut(savedDemande, STATUT_DEMANDE_CREE);

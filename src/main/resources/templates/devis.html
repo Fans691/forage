@@ -20,7 +20,7 @@
     </p>
     <p>
         <strong>Date:</strong>
-        <span th:text="${demande.dateDemande}">Date</span>
+        <span th:text="${#temporals.format(demande.dateDemande, 'yyyy-MM-dd HH:mm')}">Date</span>
     </p>
 </section>
 
