@@ -60,6 +60,23 @@ public class AccueilController {
         return "liste";
     }
 
+    @GetMapping("/api/demandes")
+    @ResponseBody
+    public List<Map<String, Object>> apiDemandes() {
+        return ds.getDemande().stream()
+                .map(demande -> Map.<String, Object>of(
+                        "id", demande.getId(),
+                        "reference", demande.getReference(),
+                        "client", Map.of("nom", demande.getClient().getNom()),
+                        "commune", Map.of("libelle", demande.getCommune().getLibelle()),
+                "dateDemande", demande.getDateDemande() != null
+                    ? demande.getDateDemande().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                    : null,
+                        "lieu", demande.getLieu(),
+                        "statutActuelLibelle", demande.getStatutActuelLibelle()))
+                .toList();
+    }
+
 	@GetMapping("/devis/nouveau")
 	public String nouveauDevisChoixDemande(Model model) {
 		model.addAttribute("demandes", ds.getDemande());
