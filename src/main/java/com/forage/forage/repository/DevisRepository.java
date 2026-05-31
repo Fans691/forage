@@ -21,5 +21,14 @@ public interface DevisRepository extends JpaRepository<Devis, Long> {
 
 	@Query("select d.demande.id from Devis d")
 	List<Long> findDemandeIds();
+
+	@EntityGraph(attributePaths = {
+		"demande",
+		"demande.client",
+		"demande.commune",
+		"demande.commune.district",
+		"demande.commune.district.region"
+	})
+	java.util.Optional<Devis> findDetailedById(Long id);
     
 }

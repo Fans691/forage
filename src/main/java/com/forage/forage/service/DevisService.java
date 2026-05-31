@@ -1,5 +1,6 @@
 package com.forage.forage.service;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,11 @@ public class DevisService {
         return dr.findById(id).orElse(null);
     }
 
+    @Transactional
+    public Devis findDetailedById(Long id) {
+        return dr.findDetailedById(id).orElse(null);
+    }
+
     public List<Devis> findByDemandeId(Long demandeId) {
         return dr.findByDemandeId(demandeId);
     }
@@ -37,7 +43,7 @@ public class DevisService {
     }
 
     @Transactional
-    public List<Devis> saveForDemande(Demande demande, List<String> descriptions, List<Double> montants) {
+    public List<Devis> saveForDemande(Demande demande, List<String> descriptions, List<Double> montants, LocalDate dateDevis) {
         // create and save a Devis for each provided description/montant pair
         int count = Math.min(descriptions == null ? 0 : descriptions.size(), montants == null ? 0 : montants.size());
         List<Devis> saved = new java.util.ArrayList<>();
@@ -49,6 +55,7 @@ public class DevisService {
             devis.setDemande(demande);
             devis.setDescription(desc);
             devis.setMontant(mont);
+            devis.setDateDevis(dateDevis);
             saved.add(dr.save(devis));
         }
         return saved;

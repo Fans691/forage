@@ -17,6 +17,10 @@
         <span th:text="${demande.client.nom}">Client</span>
     </p>
     <p>
+        <strong>Reference:</strong>
+        <span th:text="${demande.reference}">DM000</span>
+    </p>
+    <p>
         <strong>Lieu:</strong>
         <span th:text="${demande.lieu}">Lieu</span>
     </p>
@@ -40,6 +44,9 @@
 <section>
     <h2>Ajouter des lignes</h2>
     <form th:action="@{/demandes/{id}/devis(id=${demande.id})}" method="post">
+        <label>Date devis
+            <input type="date" name="dateDevis" required>
+        </label>
         <div id="lignes">
             <div class="ligne">
                 <label>Objet

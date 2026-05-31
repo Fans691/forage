@@ -18,6 +18,11 @@ import com.forage.forage.repository.StatutRepository;
 
 @Service
 public class DemandeService {
+    private static final String STATUT_DEMANDE_CREE = "demande cree";
+    private static final String STATUT_DEMANDE_ETUDE = "demande etude";
+    private static final String STATUT_DEMANDE_ETUDE_REFUSE = "demande etude refuse";
+    private static final String STATUT_DEMANDE_FORAGE = "demande forage";
+
     protected final DemandeRepository dr;
     protected final DemandeStatutRepository dsr;
     protected final StatutRepository sr;
@@ -63,7 +68,7 @@ public class DemandeService {
     public Demande createDemande(Client client, Commune commune, LocalDate dateDemande, String lieu) {
         Demande demande = new Demande(client, commune, "", dateDemande, lieu);
         Demande savedDemande = dr.save(demande);
-        enregistrerStatut(savedDemande, "envoyer");
+        enregistrerStatut(savedDemande, STATUT_DEMANDE_CREE);
         return savedDemande;
     }
 
@@ -71,7 +76,7 @@ public class DemandeService {
     public void marquerRefuse(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
-            enregistrerStatut(demande, "refuse");
+            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_REFUSE);
         }
     }
 
@@ -79,9 +84,25 @@ public class DemandeService {
     public void marquerValide(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
-            enregistrerStatut(demande, "valide");
+            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE);
         }
     }
+
+	@Transactional
+	public void marquerEtude(Long demandeId) {
+		Demande demande = getDemandeById(demandeId);
+		if (demande != null) {
+			enregistrerStatut(demande, STATUT_DEMANDE_ETUDE);
+		}
+	}
+
+	@Transactional
+	public void marquerForage(Long demandeId) {
+		Demande demande = getDemandeById(demandeId);
+		if (demande != null) {
+			enregistrerStatut(demande, STATUT_DEMANDE_FORAGE);
+		}
+	}
 
     private void enregistrerStatut(Demande demande, String libelle) {
         Statut statut = sr.findByLibelleIgnoreCase(libelle)

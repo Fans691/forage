@@ -64,6 +64,12 @@ public class Demande {
 		return statutActuel != null && statutActuel.getStatut() != null ? statutActuel.getStatut().getLibelle() : "";
 	}
 
+	@Transient
+	public String getReference() {
+		if (id == null) return "";
+		return String.format("DM%03d", id);
+	}
+
 	public void setClient(Client client) {this.client = client;}
 	public void setCommune(Commune commune) {this.commune = commune;}
 	public void setDescription(String description) {this.description = description;}

@@ -30,6 +30,13 @@
         <li th:each="devis : ${devisList}">
             <span th:text="${devis.description}">Objet</span> -
             <span th:text="${devis.montant}">0</span>
+            <span th:if="${devis.dateDevis}"> | <span th:text="${devis.dateDevis}">2026-05-31</span></span>
+            <form th:action="@{/devis/{id}/accepter(id=${devis.id})}" method="post" style="display:inline;">
+                <button type="submit">Accepter</button>
+            </form>
+            <form th:action="@{/devis/{id}/refuser(id=${devis.id})}" method="post" style="display:inline;">
+                <button type="submit">Refuser</button>
+            </form>
         </li>
     </ul>
 </section>

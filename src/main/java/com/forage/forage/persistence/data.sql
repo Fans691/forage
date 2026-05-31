@@ -49,3 +49,7 @@ insert into commune(id, libelle, id_district) values (24, 'Ambodivoahangy', 12);
 
 insert into statut(id, libelle) values (3, 'etude');
 insert into statut(id, libelle) values (4, 'forage');
+insert into statut(id, libelle) values (5, 'demande cree');
+insert into statut(id, libelle) values (6, 'demande etude');
+insert into statut(id, libelle) values (7, 'demande etude refuse');
+insert into statut(id, libelle) values (8, 'demande forage');

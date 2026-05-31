@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau devis</title>
+</head>
+<body>
+<h1>Choisir une demande</h1>
+
+<label for="demandeId">Reference demande</label>
+<select id="demandeId" name="demandeId" required>
+    <option value="" disabled selected>Choisir une reference</option>
+    <option th:each="demande : ${demandes}"
+            th:value="${demande.id}"
+            th:text="${demande.reference + ' - ' + demande.client.nom}">DM000 - Client</option>
+</select>
+
+<p><a th:href="@{/demandes}">Retour a la liste</a></p>
+
+<script>
+    const select = document.getElementById('demandeId');
+    select.addEventListener('change', () => {
+        const id = select.value;
+        if (!id) return;
+        window.location.href = `/demandes/${id}/devis/nouveau`;
+    });
+</script>
+</body>
+</html>

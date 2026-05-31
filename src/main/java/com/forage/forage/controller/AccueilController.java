@@ -58,6 +58,12 @@ public class AccueilController {
         return "liste";
     }
 
+	@GetMapping("/devis/nouveau")
+	public String nouveauDevisChoixDemande(Model model) {
+		model.addAttribute("demandes", ds.getDemande());
+		return "nouveau-devis";
+	}
+
     @GetMapping("/demandes/{id}/edit")
     public String editDemande(@PathVariable Long id, Model model) {
         Demande demande = ds.getDemandeById(id);
@@ -135,12 +141,6 @@ public class AccueilController {
             return "redirect:/demandes";
         }
 
-        String statut = demande.getStatutActuelLibelle();
-        if (!"valide".equalsIgnoreCase(statut) && !"accepte".equalsIgnoreCase(statut) && !"accepté".equalsIgnoreCase(statut)) {
-            redirectAttributes.addFlashAttribute("message", "Le devis ne peut être créé que pour une demande acceptée.");
-            return "redirect:/demandes";
-        }
-
         java.util.List<Devis> devisList = dvs.findByDemandeId(id);
         model.addAttribute("demande", demande);
         model.addAttribute("devisList", devisList);
@@ -152,6 +152,7 @@ public class AccueilController {
             @PathVariable Long id,
             @RequestParam(name = "objet") List<String> objets,
             @RequestParam(name = "montant") List<Double> montants,
+            @RequestParam(name = "dateDevis", required = false) LocalDate dateDevis,
             RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
 
@@ -160,13 +161,8 @@ public class AccueilController {
             return "redirect:/demandes";
         }
 
-        String statut = demande.getStatutActuelLibelle();
-        if (!"valide".equalsIgnoreCase(statut) && !"accepte".equalsIgnoreCase(statut) && !"accepté".equalsIgnoreCase(statut)) {
-            redirectAttributes.addFlashAttribute("message", "Le devis ne peut être créé que pour une demande acceptée.");
-            return "redirect:/demandes";
-        }
-
-        dvs.saveForDemande(demande, objets, montants);
+        dvs.saveForDemande(demande, objets, montants, dateDevis);
+        ds.marquerEtude(id);
         redirectAttributes.addFlashAttribute("message", "Devis enregistré avec succès.");
         return "redirect:/demandes/" + id + "/devis";
     }
@@ -199,8 +195,34 @@ public class AccueilController {
 
     @PostMapping("/demandes/{id}/valider")
     public String validerDemande(@PathVariable Long id) {
-        ds.marquerValide(id);
+        ds.marquerEtude(id);
         return "redirect:/demandes";
+    }
+
+    @PostMapping("/devis/{id}/accepter")
+    public String accepterDevis(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Devis devis = dvs.findDetailedById(id);
+        if (devis == null || devis.getDemande() == null) {
+            redirectAttributes.addFlashAttribute("message", "Devis introuvable.");
+            return "redirect:/demandes";
+        }
+
+        ds.marquerForage(devis.getDemande().getId());
+        redirectAttributes.addFlashAttribute("message", "Demande mise en forage.");
+        return "redirect:/demandes/" + devis.getDemande().getId() + "/devis";
+    }
+
+    @PostMapping("/devis/{id}/refuser")
+    public String refuserDevis(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Devis devis = dvs.findDetailedById(id);
+        if (devis == null || devis.getDemande() == null) {
+            redirectAttributes.addFlashAttribute("message", "Devis introuvable.");
+            return "redirect:/demandes";
+        }
+
+        ds.marquerRefuse(devis.getDemande().getId());
+        redirectAttributes.addFlashAttribute("message", "Demande refusee.");
+        return "redirect:/demandes/" + devis.getDemande().getId() + "/devis";
     }
 
     @PostMapping("/district")

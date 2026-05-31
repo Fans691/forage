@@ -10,6 +10,8 @@
 
 <p th:if="${message}" th:text="${message}">Message</p>
 
+<p><a th:href="@{/devis/nouveau}">Nouveau devis</a></p>
+
 <table>
     <thead>
         <tr>
@@ -43,13 +45,13 @@
                     <button type="submit">Supprimer</button>
                 </form>
                 <form th:action="@{/demandes/{id}/valider(id=${demande.id})}" method="post" style="display:inline;">
-                    <button type="submit">Valider</button>
+                    <button type="submit">Etude</button>
                 </form>
                 <form th:action="@{/demandes/{id}/refuser(id=${demande.id})}" method="post" style="display:inline;">
                     <button type="submit">Refuser</button>
                 </form>
                 <a th:if="${devisDemandeIds.contains(demande.id)}" th:href="@{/demandes/{id}/devis(id=${demande.id})}">Voir devis</a>
-                <a th:if="${!devisDemandeIds.contains(demande.id)}" th:href="@{/demandes/{id}/devis/nouveau(id=${demande.id})}">Nouveau devis</a>
+                <a th:if="${!devisDemandeIds.contains(demande.id)}" th:href="@{/devis/nouveau}">Nouveau devis</a>
             </td>
         </tr>
     </tbody>
