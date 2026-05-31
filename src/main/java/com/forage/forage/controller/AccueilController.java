@@ -60,6 +60,46 @@ public class AccueilController {
         return "liste";
     }
 
+    @GetMapping("/statut")
+    public String pageStatut(Model model) {
+        model.addAttribute("statuts", List.of(
+                "demande cree",
+                "demande etude",
+                "demande etude refuse",
+                "demande forage"));
+        return "statut";
+    }
+
+    @PostMapping("/statut")
+    public String changerStatut(
+            @RequestParam("ref") String ref,
+            @RequestParam("statut") String statut,
+            @RequestParam("date") LocalDate date,
+            @RequestParam("time") String time,
+            Model model) {
+        model.addAttribute("statuts", List.of(
+                "demande cree",
+                "demande etude",
+                "demande etude refuse",
+                "demande forage"));
+
+        Long demandeId = parseDemandeIdFromReference(ref);
+        if (demandeId == null) {
+            model.addAttribute("message", "Reference invalide.");
+            return "statut";
+        }
+
+        LocalDateTime dateStatut = buildDateTime(date, time);
+        if (dateStatut == null) {
+            model.addAttribute("message", "Date invalide.");
+            return "statut";
+        }
+
+        boolean updated = ds.changerStatutAvecDate(demandeId, statut, dateStatut);
+        model.addAttribute("message", updated ? "Statut mis a jour." : "Demande introuvable.");
+        return "statut";
+    }
+
     @GetMapping("/api/demandes")
     @ResponseBody
     public List<Map<String, Object>> apiDemandes() {
@@ -75,6 +115,30 @@ public class AccueilController {
                         "lieu", demande.getLieu(),
                         "statutActuelLibelle", demande.getStatutActuelLibelle()))
                 .toList();
+    }
+
+    @PostMapping("/api/demandes/statut")
+    @ResponseBody
+    public Map<String, Object> apiMajStatutDemande(
+            @RequestParam("ref") String ref,
+            @RequestParam("statut") String statut,
+            @RequestParam("date") String date) {
+        Long demandeId = parseDemandeIdFromReference(ref);
+        if (demandeId == null) {
+            return Map.of("ok", false, "message", "Reference invalide.");
+        }
+
+        LocalDateTime dateStatut = parseDateTime(date);
+        if (dateStatut == null) {
+            return Map.of("ok", false, "message", "Date invalide (yyyy-MM-dd HH:mm).", "ref", ref);
+        }
+
+        boolean updated = ds.changerStatutAvecDate(demandeId, statut, dateStatut);
+        if (!updated) {
+            return Map.of("ok", false, "message", "Demande introuvable.", "ref", ref);
+        }
+
+        return Map.of("ok", true, "message", "Statut mis a jour.", "ref", ref, "statut", statut, "date", date);
     }
 
 	@GetMapping("/devis/nouveau")
@@ -305,6 +369,15 @@ public class AccueilController {
         try {
             return Long.parseLong(digits);
         } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private LocalDateTime parseDateTime(String date) {
+        if (date == null || date.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(date, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        } catch (Exception ex) {
             return null;
         }
     }

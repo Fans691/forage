@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changer le statut</title>
+</head>
+<body>
+<h1>Changer le statut d une demande</h1>
+
+<p th:if="${message}" th:text="${message}">Message</p>
+
+<form th:action="@{/statut}" method="post">
+    <label for="ref">Reference demande</label>
+    <input type="text" id="ref" name="ref" placeholder="DM001" required>
+
+    <label for="statut">Statut</label>
+    <select id="statut" name="statut" required>
+        <option value="" disabled selected>Choisir un statut</option>
+        <option th:each="s : ${statuts}" th:value="${s}" th:text="${s}">Statut</option>
+    </select>
+
+    <label for="date">Date</label>
+    <input type="date" id="date" name="date" required>
+
+    <label for="time">Heure</label>
+    <input type="time" id="time" name="time" required>
+
+    <button type="submit">Valider</button>
+</form>
+
+<p><a th:href="@{/}">Retour a l accueil</a></p>
+</body>
+</html>

@@ -103,11 +103,24 @@ public class DemandeService {
 		}
 	}
 
+    @Transactional
+    public boolean changerStatutAvecDate(Long demandeId, String libelle, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande == null) return false;
+        LocalDateTime dateFinale = dateStatut != null ? dateStatut : LocalDateTime.now();
+        enregistrerStatut(demande, libelle, dateFinale);
+        return true;
+    }
+
     private void enregistrerStatut(Demande demande, String libelle) {
+        enregistrerStatut(demande, libelle, LocalDateTime.now());
+    }
+
+    private void enregistrerStatut(Demande demande, String libelle, LocalDateTime dateStatut) {
         Statut statut = sr.findByLibelleIgnoreCase(libelle)
                 .orElseGet(() -> sr.save(new Statut(libelle)));
 
-        DemandeStatut demandeStatut = new DemandeStatut(statut, demande, libelle, LocalDateTime.now(), 0.0);
+        DemandeStatut demandeStatut = new DemandeStatut(statut, demande, libelle, dateStatut, 0.0);
         dsr.save(demandeStatut);
     }
 }
