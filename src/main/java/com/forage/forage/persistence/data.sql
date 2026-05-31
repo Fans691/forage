@@ -47,9 +47,8 @@ insert into commune(id, libelle, id_district) values (22, 'Antohobe', 11);
 insert into commune(id, libelle, id_district) values (23, 'Andapa-ville', 12);
 insert into commune(id, libelle, id_district) values (24, 'Ambodivoahangy', 12);
 
-insert into statut(id, libelle) values (3, 'etude');
-insert into statut(id, libelle) values (4, 'forage');
-insert into statut(id, libelle) values (5, 'demande cree');
-insert into statut(id, libelle) values (6, 'demande etude');
-insert into statut(id, libelle) values (7, 'demande etude refuse');
-insert into statut(id, libelle) values (8, 'demande forage');
+TRUNCATE TABLE statut RESTART IDENTITY CASCADE;
+insert into statut(id, libelle) values (1, 'demande cree');
+insert into statut(id, libelle) values (2, 'demande etude');
+insert into statut(id, libelle) values (3, 'demande etude refuse');
+insert into statut(id, libelle) values (4, 'demande forage');

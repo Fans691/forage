@@ -47,13 +47,19 @@
         <label>Date devis
             <input type="date" name="dateDevis" required>
         </label>
+        <label>Heure devis
+            <input type="time" name="timeDevis" required>
+        </label>
         <div id="lignes">
             <div class="ligne">
-                <label>Objet
+                <label>Type
                     <input type="text" name="objet" required>
                 </label>
                 <label>Montant
                     <input type="number" name="montant" step="0.01" required>
+                </label>
+                <label>Qte
+                    <input type="number" name="qte" step="0.01">
                 </label>
             </div>
         </div>
@@ -71,7 +77,7 @@
     addButton.addEventListener('click', () => {
         const line = document.createElement('div');
         line.className = 'ligne';
-        line.innerHTML = '\n            <label>Objet\n                <input type="text" name="objet" required>\n            </label>\n            <label>Montant\n                <input type="number" name="montant" step="0.01" required>\n            </label>\n        ';
+        line.innerHTML = '\n            <label>Type\n                <input type="text" name="objet" required>\n            </label>\n            <label>Montant\n                <input type="number" name="montant" step="0.01" required>\n            </label>\n            <label>Qte\n                <input type="number" name="qte" step="0.01">\n            </label>\n        ';
         container.appendChild(line);
     });
 </script>

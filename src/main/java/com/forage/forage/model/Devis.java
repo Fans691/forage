@@ -1,7 +1,7 @@
 package com.forage.forage.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "devis")
@@ -25,11 +25,11 @@ public class Devis {
     private String description;
 
     @Column(name = "date_devis")
-    private LocalDate dateDevis;
+    private LocalDateTime dateDevis;
 
     public Devis() {}
 
-    public Devis(Demande demande, Double montant, Double qte, String description, LocalDate dateDevis) {
+    public Devis(Demande demande, Double montant, Double qte, String description, LocalDateTime dateDevis) {
         this.demande = demande;
         this.montant = montant;
         this.qte = qte;
@@ -42,11 +42,11 @@ public class Devis {
     public Double getMontant() {return montant;}
     public Double getQte() {return qte;}
     public String getDescription() {return description;}
-    public LocalDate getDateDevis() {return dateDevis;}
+    public LocalDateTime getDateDevis() {return dateDevis;}
 
     public void setDemande(Demande demande) {this.demande = demande;}
     public void setMontant(Double montant) {this.montant = montant;}
     public void setQte(Double qte) {this.qte = qte;}
     public void setDescription(String description) {this.description = description;}
-    public void setDateDevis(LocalDate dateDevis) {this.dateDevis = dateDevis;}
+    public void setDateDevis(LocalDateTime dateDevis) {this.dateDevis = dateDevis;}
 }

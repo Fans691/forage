@@ -84,7 +84,7 @@ public class AccueilController {
     }
 
     @GetMapping("/demandes/{id}/edit")
-    public String editDemande(@PathVariable Long id, Model model) {
+    public String editDemande(@PathVariable("id") Long id, Model model) {
         Demande demande = ds.getDemandeById(id);
 
         if (demande == null) {
@@ -119,8 +119,8 @@ public class AccueilController {
     }
 
     @PostMapping("/demandes/{id}/update")
-    public String updateDemande(
-            @PathVariable Long id,
+        public String updateDemande(
+            @PathVariable("id") Long id,
             @RequestParam("clientId") Long clientId,
             @RequestParam("communeId") Long communeId,
             @RequestParam("dateDemande") LocalDate dateDemande,
@@ -147,14 +147,14 @@ public class AccueilController {
     }
 
     @PostMapping("/demandes/{id}/delete")
-    public String deleteDemande(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteDemande(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         ds.deleteDemande(id);
         redirectAttributes.addFlashAttribute("message", "Demande supprimée avec succès.");
         return "redirect:/demandes";
     }
 
     @GetMapping("/demandes/{id}/devis/nouveau")
-    public String nouveauDevis(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String nouveauDevis(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
 
         if (demande == null) {
@@ -169,11 +169,13 @@ public class AccueilController {
     }
 
     @PostMapping("/demandes/{id}/devis")
-    public String enregistrerDevis(
-            @PathVariable Long id,
+        public String enregistrerDevis(
+            @PathVariable("id") Long id,
             @RequestParam(name = "objet") List<String> objets,
             @RequestParam(name = "montant") List<Double> montants,
-            @RequestParam(name = "dateDevis", required = false) LocalDate dateDevis,
+                @RequestParam(name = "qte", required = false) List<Double> qtes,
+                @RequestParam(name = "dateDevis", required = false) LocalDate dateDevis,
+                @RequestParam(name = "timeDevis", required = false) String timeDevis,
             RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
 
@@ -182,14 +184,14 @@ public class AccueilController {
             return "redirect:/demandes";
         }
 
-        dvs.saveForDemande(demande, objets, montants, dateDevis);
+        dvs.saveForDemande(demande, objets, montants, qtes, buildDateTime(dateDevis, timeDevis));
         ds.marquerEtude(id);
         redirectAttributes.addFlashAttribute("message", "Devis enregistré avec succès.");
         return "redirect:/demandes/" + id + "/devis";
     }
 
     @GetMapping("/demandes/{id}/devis")
-    public String voirDevis(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String voirDevis(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
 
         if (demande == null) {
@@ -209,19 +211,19 @@ public class AccueilController {
     }
 
     @PostMapping("/demandes/{id}/refuser")
-    public String refuserDemande(@PathVariable Long id) {
+    public String refuserDemande(@PathVariable("id") Long id) {
         ds.marquerRefuse(id);
         return "redirect:/demandes";
     }
 
     @PostMapping("/demandes/{id}/valider")
-    public String validerDemande(@PathVariable Long id) {
+    public String validerDemande(@PathVariable("id") Long id) {
         ds.marquerEtude(id);
         return "redirect:/demandes";
     }
 
     @PostMapping("/devis/{id}/accepter")
-    public String accepterDevis(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String accepterDevis(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Devis devis = dvs.findDetailedById(id);
         if (devis == null || devis.getDemande() == null) {
             redirectAttributes.addFlashAttribute("message", "Devis introuvable.");
@@ -234,7 +236,7 @@ public class AccueilController {
     }
 
     @PostMapping("/devis/{id}/refuser")
-    public String refuserDevis(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String refuserDevis(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Devis devis = dvs.findDetailedById(id);
         if (devis == null || devis.getDemande() == null) {
             redirectAttributes.addFlashAttribute("message", "Devis introuvable.");
@@ -267,6 +269,7 @@ public class AccueilController {
     }
 
     private LocalDateTime buildDateTime(LocalDate dateDemande, String timeDemande) {
+        if (dateDemande == null) return null;
         LocalTime time = LocalTime.MIDNIGHT;
         if (timeDemande != null && !timeDemande.isBlank()) {
             try {

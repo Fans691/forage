@@ -28,9 +28,10 @@
     <h2>Liste des devis</h2>
     <ul>
         <li th:each="devis : ${devisList}">
-            <span th:text="${devis.description}">Objet</span> -
+            <span th:text="${devis.description}">Type</span> -
             <span th:text="${devis.montant}">0</span>
-            <span th:if="${devis.dateDevis}"> | <span th:text="${devis.dateDevis}">2026-05-31</span></span>
+            <span th:if="${devis.qte}"> | <span th:text="${devis.qte}">1</span></span>
+            <span th:if="${devis.dateDevis}"> | <span th:text="${#temporals.format(devis.dateDevis, 'yyyy-MM-dd HH:mm')}">2026-05-31 10:30</span></span>
             <form th:action="@{/devis/{id}/accepter(id=${devis.id})}" method="post" style="display:inline;">
                 <button type="submit">Accepter</button>
             </form>

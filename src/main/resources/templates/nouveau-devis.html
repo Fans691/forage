@@ -10,19 +10,21 @@
 
 <p th:if="${message}" th:text="${message}">Message</p>
 
-<label for="demandeRef">Reference demande</label>
-<input type="text" id="demandeRef" name="demandeRef" placeholder="DM001" required>
+<form id="refForm" th:action="@{/devis/nouveau/ref}" method="get">
+    <label for="demandeRef">Reference demande</label>
+    <input type="text" id="demandeRef" name="ref" placeholder="DM001" required>
+</form>
 
 <p><a th:href="@{/demandes}">Retour a la liste</a></p>
 
 <script>
-    const baseUrl = /*[[@{/}]]*/ '/';
     const input = document.getElementById('demandeRef');
+    const form = document.getElementById('refForm');
 
     function goToDemande() {
         const ref = input.value.trim();
         if (!ref) return;
-        window.location.href = `${baseUrl}devis/nouveau/ref?ref=${encodeURIComponent(ref)}`;
+        form.submit();
     }
 
     input.addEventListener('blur', goToDemande);

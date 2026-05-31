@@ -18,8 +18,6 @@ public class Statut {
 	@OneToMany(mappedBy = "statut")
 	private List<DemandeStatut> demandeStatuts = new ArrayList<>();
 
-	@OneToMany(mappedBy = "statut")
-	private List<DevisStatut> devisStatuts = new ArrayList<>();
 
 	public Statut() {}
 
@@ -29,10 +27,8 @@ public class Statut {
 
 	public Long getId() {return id;}
 	public String getLibelle() {return libelle;}
-	public List<DevisStatut> getDevisStatuts() {return devisStatuts;}
 	public List<DemandeStatut> getDemandeStatuts() {return demandeStatuts;}
 
 	public void setLibelle(String libelle) {this.libelle = libelle;}
-	public void setDevisStatuts(List<DevisStatut> devisStatuts) {this.devisStatuts = devisStatuts;}
 	public void setDemandeStatuts(List<DemandeStatut> demandeStatuts) {this.demandeStatuts = demandeStatuts;}
 }
