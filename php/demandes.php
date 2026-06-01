@@ -4,6 +4,12 @@ if (!empty($_GET['api'])) {
     $apiUrl = $_GET['api'];
 }
 
+$dbHost = getenv('APP_DB_HOST') ?: 'localhost';
+$dbPort = getenv('APP_DB_PORT') ?: '5432';
+$dbName = getenv('APP_DB_NAME') ?: 'forage';
+$dbUser = getenv('APP_DB_USER') ?: 'fans';
+$dbPassword = getenv('APP_DB_PASSWORD') ?: '123';
+
 function fetchJson($url) {
     $context = stream_context_create([
         'http' => [
@@ -37,9 +43,105 @@ function fetchJson($url) {
     ];
 }
 
+function openDbConnection($host, $port, $dbName, $dbUser, $dbPassword) {
+    $dsn = sprintf('pgsql:host=%s;port=%s;dbname=%s', $host, $port, $dbName);
+    $pdo = new PDO($dsn, $dbUser, $dbPassword, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+    return $pdo;
+}
+
+function buildPlaceholders($count) {
+    return implode(',', array_fill(0, $count, '?'));
+}
+
+function computeDtBetween(array $entries, $id1, $id2) {
+    $pos1 = null;
+    $pos2 = null;
+
+    $count = count($entries);
+    for ($i = 0; $i < $count; $i++) {
+        if ($entries[$i]['statutId'] == $id1) {
+            $pos1 = $i;
+            break;
+        }
+    }
+
+    if ($pos1 === null) {
+        return 0.0;
+    }
+
+    for ($i = $pos1 + 1; $i < $count; $i++) {
+        if ($entries[$i]['statutId'] == $id2) {
+            $pos2 = $i;
+            break;
+        }
+    }
+
+    if ($pos2 === null) {
+        return 0.0;
+    }
+
+    $total = 0.0;
+    for ($i = $pos1 + 1; $i <= $pos2; $i++) {
+        $value = $entries[$i]['dt'];
+        if ($value !== null) {
+            $total += (float) $value;
+        }
+    }
+
+    return $total;
+}
+
 $result = fetchJson($apiUrl);
 $error = $result['error'];
 $demandes = $result['data'];
+$dbError = null;
+$configRules = [];
+$statutMap = [];
+$demandeStatutHistory = [];
+
+if (!$error && !empty($demandes)) {
+    try {
+        $pdo = openDbConnection($dbHost, $dbPort, $dbName, $dbUser, $dbPassword);
+
+        $statutRows = $pdo->query('select id, libelle from statut order by id')->fetchAll();
+        foreach ($statutRows as $row) {
+            $statutMap[(int) $row['id']] = $row['libelle'];
+        }
+
+        $configRules = $pdo->query('select id1, id2, dt, code_couleur from config order by id1, id2, dt')
+            ->fetchAll();
+
+        $demandeIds = array_values(array_filter(array_map(function ($demande) {
+            return isset($demande['id']) ? (int) $demande['id'] : null;
+        }, $demandes)));
+
+        if (!empty($demandeIds)) {
+            $placeholders = buildPlaceholders(count($demandeIds));
+            $stmt = $pdo->prepare(
+                'select id_demande, id_statut, date, dt from demande_statut where id_demande in (' . $placeholders . ') order by id_demande, date'
+            );
+            $stmt->execute($demandeIds);
+            $rows = $stmt->fetchAll();
+
+            foreach ($rows as $row) {
+                $demandeId = (int) $row['id_demande'];
+                if (!isset($demandeStatutHistory[$demandeId])) {
+                    $demandeStatutHistory[$demandeId] = [];
+                }
+                $demandeStatutHistory[$demandeId][] = [
+                    'statutId' => (int) $row['id_statut'],
+                    'date' => $row['date'],
+                    'dt' => $row['dt'],
+                ];
+            }
+        }
+    } catch (Throwable $ex) {
+        $dbError = $ex->getMessage();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -53,6 +155,8 @@ $demandes = $result['data'];
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background: #f2f2f2; }
         .error { color: #b00020; margin-bottom: 16px; }
+        .rules { margin: 0; padding-left: 18px; }
+        .rules li { margin: 4px 0; }
     </style>
 </head>
 <body>
@@ -60,6 +164,8 @@ $demandes = $result['data'];
 
 <?php if ($error): ?>
     <div class="error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+<?php elseif ($dbError): ?>
+    <div class="error">Erreur BD: <?php echo htmlspecialchars($dbError, ENT_QUOTES, 'UTF-8'); ?></div>
 <?php else: ?>
     <?php if (empty($demandes)): ?>
         <p>Aucune demande.</p>
@@ -73,10 +179,36 @@ $demandes = $result['data'];
                     <th>Date</th>
                     <th>Lieu</th>
                     <th>Statut</th>
+                    <th>Regles</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($demandes as $demande): ?>
+                    <?php
+                        $demandeId = isset($demande['id']) ? (int) $demande['id'] : null;
+                        $history = $demandeId !== null && isset($demandeStatutHistory[$demandeId])
+                            ? $demandeStatutHistory[$demandeId]
+                            : [];
+                        $ruleItems = [];
+
+                        foreach ($configRules as $rule) {
+                            $id1 = (int) $rule['id1'];
+                            $id2 = (int) $rule['id2'];
+                            $dtSeuil = (float) $rule['dt'];
+                            $dtCalc = computeDtBetween($history, $id1, $id2);
+
+                            $label1 = $statutMap[$id1] ?? ('statut ' . $id1);
+                            $label2 = $statutMap[$id2] ?? ('statut ' . $id2);
+                            $ruleItems[] = sprintf(
+                                '[%s -> %s] => %s (dt: %s min, seuil: %s min)',
+                                $label1,
+                                $label2,
+                                $rule['code_couleur'],
+                                rtrim(rtrim(number_format($dtCalc, 2, '.', ''), '0'), '.'),
+                                rtrim(rtrim(number_format($dtSeuil, 2, '.', ''), '0'), '.')
+                            );
+                        }
+                    ?>
                     <tr>
                         <td><?php echo htmlspecialchars($demande['id'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($demande['client']['nom'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
@@ -84,6 +216,17 @@ $demandes = $result['data'];
                         <td><?php echo htmlspecialchars($demande['dateDemande'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($demande['lieu'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($demande['statutActuelLibelle'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td>
+                            <?php if (empty($ruleItems)): ?>
+                                <span>Aucune configuration.</span>
+                            <?php else: ?>
+                                <ul class="rules">
+                                    <?php foreach ($ruleItems as $item): ?>
+                                        <li><?php echo htmlspecialchars($item, ENT_QUOTES, 'UTF-8'); ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

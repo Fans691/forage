@@ -1,6 +1,10 @@
 package com.forage.forage.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -157,6 +161,40 @@ public class DemandeService {
                 .orElseGet(() -> sr.save(new Statut(libelle)));
 
         DemandeStatut demandeStatut = new DemandeStatut(statut, demande, libelle, dateStatut, 0.0);
+        DemandeStatut precedent = dsr.findTopByDemandeIdAndDateLessThanEqualOrderByDateDesc(demande.getId(), dateStatut)
+                .orElse(null);
+        double dtMinutes = computeDtMinutes(precedent == null ? null : precedent.getDate(), dateStatut);
+        demandeStatut.setDt(dtMinutes);
         dsr.save(demandeStatut);
+    }
+
+    private double computeDtMinutes(LocalDateTime previous, LocalDateTime current) {
+        if (previous == null || current == null) return 0L;
+        if (current.isBefore(previous)) return 0L;
+
+        LocalTime workStart = LocalTime.of(8, 0);
+        LocalTime workEnd = LocalTime.of(16, 0);
+        long totalMinutes = 0L;
+
+        LocalDate startDate = previous.toLocalDate();
+        LocalDate endDate = current.toLocalDate();
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            DayOfWeek day = date.getDayOfWeek();
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                continue;
+            }
+
+            LocalDateTime dayStart = LocalDateTime.of(date, workStart);
+            LocalDateTime dayEnd = LocalDateTime.of(date, workEnd);
+            LocalDateTime rangeStart = previous.isAfter(dayStart) ? previous : dayStart;
+            LocalDateTime rangeEnd = current.isBefore(dayEnd) ? current : dayEnd;
+
+            if (rangeEnd.isAfter(rangeStart)) {
+                totalMinutes += ChronoUnit.MINUTES.between(rangeStart, rangeEnd);
+            }
+        }
+
+        return (double) totalMinutes;
     }
 }
