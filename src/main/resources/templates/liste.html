@@ -45,10 +45,10 @@
                     <button type="submit">Supprimer</button>
                 </form>
                 <form th:action="@{/demandes/{id}/valider(id=${demande.id})}" method="post" style="display:inline;">
-                    <button type="submit">Etude</button>
+                    <button type="submit">Accepter etude</button>
                 </form>
                 <form th:action="@{/demandes/{id}/refuser(id=${demande.id})}" method="post" style="display:inline;">
-                    <button type="submit">Refuser</button>
+                    <button type="submit">Refuser etude</button>
                 </form>
                 <a th:if="${devisDemandeIds.contains(demande.id)}" th:href="@{/demandes/{id}/devis(id=${demande.id})}">Voir devis</a>
                 <a th:if="${!devisDemandeIds.contains(demande.id)}" th:href="@{/devis/nouveau}">Nouveau devis</a>

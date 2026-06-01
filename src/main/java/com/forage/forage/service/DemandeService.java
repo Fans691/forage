@@ -17,10 +17,14 @@ import com.forage.forage.repository.StatutRepository;
 
 @Service
 public class DemandeService {
-    private static final String STATUT_DEMANDE_CREE = "demande cree";
-    private static final String STATUT_DEMANDE_ETUDE = "demande etude";
+    private static final String STATUT_DEMANDE_ETUDE_CREE = "demande etude cree";
+    private static final String STATUT_DEMANDE_ETUDE_ACCEPTE = "demande etude accepte";
     private static final String STATUT_DEMANDE_ETUDE_REFUSE = "demande etude refuse";
-    private static final String STATUT_DEMANDE_FORAGE = "demande forage";
+    private static final String STATUT_DEMANDE_FORAGE_CREE = "demande forage cree";
+    private static final String STATUT_DEMANDE_FORAGE_ACCEPTE = "demande forage accepte";
+    private static final String STATUT_DEMANDE_FORAGE_REFUSE = "demande forage refuse";
+    private static final String STATUT_DEMANDE_TRAVAIL_CREE = "demande travail cree";
+    private static final String STATUT_DEMANDE_TRAVAIL_TERMINE = "demande travail termine";
 
     protected final DemandeRepository dr;
     protected final DemandeStatutRepository dsr;
@@ -67,7 +71,7 @@ public class DemandeService {
     public Demande createDemande(Client client, Commune commune, LocalDateTime dateDemande, String lieu) {
         Demande demande = new Demande(client, commune, "", dateDemande, lieu);
         Demande savedDemande = dr.save(demande);
-        enregistrerStatut(savedDemande, STATUT_DEMANDE_CREE);
+        enregistrerStatut(savedDemande, STATUT_DEMANDE_ETUDE_CREE);
         return savedDemande;
     }
 
@@ -83,7 +87,7 @@ public class DemandeService {
     public void marquerValide(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
-            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE);
+            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_ACCEPTE);
         }
     }
 
@@ -91,7 +95,7 @@ public class DemandeService {
 	public void marquerEtude(Long demandeId) {
 		Demande demande = getDemandeById(demandeId);
 		if (demande != null) {
-			enregistrerStatut(demande, STATUT_DEMANDE_ETUDE);
+			enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_ACCEPTE);
 		}
 	}
 
@@ -99,9 +103,41 @@ public class DemandeService {
 	public void marquerForage(Long demandeId) {
 		Demande demande = getDemandeById(demandeId);
 		if (demande != null) {
-			enregistrerStatut(demande, STATUT_DEMANDE_FORAGE);
+			enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_CREE);
 		}
 	}
+
+    @Transactional
+    public void marquerForageAccepte(Long demandeId) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_ACCEPTE);
+        }
+    }
+
+    @Transactional
+    public void marquerForageRefuse(Long demandeId) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_REFUSE);
+        }
+    }
+
+    @Transactional
+    public void marquerTravailCree(Long demandeId) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_TRAVAIL_CREE);
+        }
+    }
+
+    @Transactional
+    public void marquerTravailTermine(Long demandeId) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_TRAVAIL_TERMINE);
+        }
+    }
 
     @Transactional
     public boolean changerStatutAvecDate(Long demandeId, String libelle, LocalDateTime dateStatut) {

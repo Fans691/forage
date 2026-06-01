@@ -1,40 +1,12 @@
-# forage
+# liste des status de demande:
+- demande etude cree : apres que le demade soit creer
+- demande etude accepte : apres que le demande soit accepte
+- demande etude refuse : statut si refuse, le demande ne peux plus etre associe au devis
+- demande forage cree : apres que les devis soit cree
+- demande forage accepte : si les devis sont accepte
+- demande forage refuse : si devis est refuse
+- demande travail cree : statut apres que tous les devis soit mis en place
+- demande travail termine : ajouter un bouton terminer travail pour acceder a cette statut
 
-Squelette Spring MVC déployable en WAR sur Tomcat, avec Thymeleaf, JPA et PostgreSQL.
-
-## Prérequis
-
-- Java 21
-- Maven 3.9+
-- Tomcat 10.1+ pour le déploiement
-- Docker pour PostgreSQL local
-
-## Démarrage de la base
-
-```bash
-docker compose up -d postgres
-```
-
-## Compilation
-
-```bash
-mvn clean package
-```
-
-Le fichier généré est `target/forage.war`.
-
-## Déploiement Tomcat
-
-Copie `target/forage.war` dans le dossier `webapps` de Tomcat, puis démarre Tomcat.
-
-L'application est accessible sur `http://localhost:8080/forage/`.
-
-## Configuration PostgreSQL
-
-Par défaut, l'application utilise les variables suivantes :
-
-- `APP_DATASOURCE_URL`
-- `APP_DATASOURCE_USERNAME`
-- `APP_DATASOURCE_PASSWORD`
-
-Si elles ne sont pas définies, elle se connecte au conteneur PostgreSQL local configuré dans `docker-compose.yml`.
+N.B: Veuillez faire en sorte que meme si on accepte les devis, et que le statut devient demande travail cree, l'utilisateur peut encore ajouter des devis et le statut revient au demande forage cree.
+Veuillez auusi faire en sorte que seul un bouton suffise pour accepte(valider) les devis d'un demande

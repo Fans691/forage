@@ -8,6 +8,8 @@
 <body>
 <h1>Devis de la demande</h1>
 
+<p th:if="${message}" th:text="${message}">Message</p>
+
 <section>
     <h2>Demande</h2>
     <p>
@@ -32,14 +34,21 @@
             <span th:text="${devis.montant}">0</span>
             <span th:if="${devis.qte}"> | <span th:text="${devis.qte}">1</span></span>
             <span th:if="${devis.dateDevis}"> | <span th:text="${#temporals.format(devis.dateDevis, 'yyyy-MM-dd HH:mm')}">2026-05-31 10:30</span></span>
-            <form th:action="@{/devis/{id}/accepter(id=${devis.id})}" method="post" style="display:inline;">
-                <button type="submit">Accepter</button>
-            </form>
-            <form th:action="@{/devis/{id}/refuser(id=${devis.id})}" method="post" style="display:inline;">
-                <button type="submit">Refuser</button>
-            </form>
         </li>
     </ul>
+</section>
+
+<section>
+    <h2>Validation</h2>
+    <form th:action="@{/demandes/{id}/devis/accepter(id=${demande.id})}" method="post" style="display:inline;">
+        <button type="submit">Valider les devis</button>
+    </form>
+    <form th:action="@{/demandes/{id}/devis/refuser(id=${demande.id})}" method="post" style="display:inline;">
+        <button type="submit">Refuser les devis</button>
+    </form>
+    <form th:action="@{/demandes/{id}/travail/terminer(id=${demande.id})}" method="post" style="display:inline;">
+        <button type="submit">Terminer travail</button>
+    </form>
 </section>
 
 <p>

@@ -48,7 +48,11 @@ insert into commune(id, libelle, id_district) values (23, 'Andapa-ville', 12);
 insert into commune(id, libelle, id_district) values (24, 'Ambodivoahangy', 12);
 
 TRUNCATE TABLE statut RESTART IDENTITY CASCADE;
-insert into statut(id, libelle) values (1, 'demande cree');
-insert into statut(id, libelle) values (2, 'demande etude');
+insert into statut(id, libelle) values (1, 'demande etude cree');
+insert into statut(id, libelle) values (2, 'demande etude accepte');
 insert into statut(id, libelle) values (3, 'demande etude refuse');
-insert into statut(id, libelle) values (4, 'demande forage');
+insert into statut(id, libelle) values (4, 'demande forage cree');
+insert into statut(id, libelle) values (5, 'demande forage accepte');
+insert into statut(id, libelle) values (6, 'demande forage refuse');
+insert into statut(id, libelle) values (7, 'demande travail cree');
+insert into statut(id, libelle) values (8, 'demande travail termine');

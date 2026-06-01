@@ -63,10 +63,14 @@ public class AccueilController {
     @GetMapping("/statut")
     public String pageStatut(Model model) {
         model.addAttribute("statuts", List.of(
-                "demande cree",
-                "demande etude",
+                "demande etude cree",
+                "demande etude accepte",
                 "demande etude refuse",
-                "demande forage"));
+                "demande forage cree",
+                "demande forage accepte",
+                "demande forage refuse",
+                "demande travail cree",
+                "demande travail termine"));
         return "statut";
     }
 
@@ -78,10 +82,14 @@ public class AccueilController {
             @RequestParam("time") String time,
             Model model) {
         model.addAttribute("statuts", List.of(
-                "demande cree",
-                "demande etude",
-                "demande etude refuse",
-                "demande forage"));
+            "demande etude cree",
+            "demande etude accepte",
+            "demande etude refuse",
+            "demande forage cree",
+            "demande forage accepte",
+            "demande forage refuse",
+            "demande travail cree",
+            "demande travail termine"));
 
         Long demandeId = parseDemandeIdFromReference(ref);
         if (demandeId == null) {
@@ -266,7 +274,7 @@ public class AccueilController {
         }
 
         dvs.saveForDemande(demande, objets, montants, qtes, buildDateTime(dateDevis, timeDevis));
-        ds.marquerEtude(id);
+        ds.marquerForage(id);
         redirectAttributes.addFlashAttribute("message", "Devis enregistré avec succès.");
         return "redirect:/demandes/" + id + "/devis";
     }
@@ -303,30 +311,43 @@ public class AccueilController {
         return "redirect:/demandes";
     }
 
-    @PostMapping("/devis/{id}/accepter")
-    public String accepterDevis(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        Devis devis = dvs.findDetailedById(id);
-        if (devis == null || devis.getDemande() == null) {
-            redirectAttributes.addFlashAttribute("message", "Devis introuvable.");
+    @PostMapping("/demandes/{id}/devis/accepter")
+    public String accepterDevisDemande(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Demande demande = ds.getDemandeById(id);
+        if (demande == null) {
+            redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
             return "redirect:/demandes";
         }
 
-        ds.marquerForage(devis.getDemande().getId());
-        redirectAttributes.addFlashAttribute("message", "Demande mise en forage.");
-        return "redirect:/demandes/" + devis.getDemande().getId() + "/devis";
+        ds.marquerTravailCree(id);
+        redirectAttributes.addFlashAttribute("message", "Devis validés. Travail créé.");
+        return "redirect:/demandes/" + id + "/devis";
     }
 
-    @PostMapping("/devis/{id}/refuser")
-    public String refuserDevis(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        Devis devis = dvs.findDetailedById(id);
-        if (devis == null || devis.getDemande() == null) {
-            redirectAttributes.addFlashAttribute("message", "Devis introuvable.");
+    @PostMapping("/demandes/{id}/devis/refuser")
+    public String refuserDevisDemande(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Demande demande = ds.getDemandeById(id);
+        if (demande == null) {
+            redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
             return "redirect:/demandes";
         }
 
-        ds.marquerRefuse(devis.getDemande().getId());
-        redirectAttributes.addFlashAttribute("message", "Demande refusee.");
-        return "redirect:/demandes/" + devis.getDemande().getId() + "/devis";
+        ds.marquerForageRefuse(id);
+        redirectAttributes.addFlashAttribute("message", "Devis refusés.");
+        return "redirect:/demandes/" + id + "/devis";
+    }
+
+    @PostMapping("/demandes/{id}/travail/terminer")
+    public String terminerTravail(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Demande demande = ds.getDemandeById(id);
+        if (demande == null) {
+            redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
+            return "redirect:/demandes";
+        }
+
+        ds.marquerTravailTermine(id);
+        redirectAttributes.addFlashAttribute("message", "Travail terminé.");
+        return "redirect:/demandes/" + id + "/devis";
     }
 
     @PostMapping("/district")
