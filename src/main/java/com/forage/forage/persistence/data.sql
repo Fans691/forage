@@ -66,6 +66,7 @@ create table config (
     code_couleur varchar(20),
     PRIMARY KEY (id1, id2, dt)
 );
+
 TRUNCATE TABLE config RESTART IDENTITY CASCADE;
 insert into config(id1, id2, dt, code_couleur) values (1, 2, 300, 'vert');
 insert into config(id1, id2, dt, code_couleur) values (1, 2, 600, 'rouge');

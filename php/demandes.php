@@ -122,15 +122,15 @@ function pickColorForDt(array $configs, $dtValue) {
         return null;
     }
 
+    $matchingColor = null;
     foreach ($configs as $config) {
         $limit = (float) $config['dt'];
-        if ($dtValue <= $limit) {
-            return $config['code_couleur'];
+        if ($dtValue > $limit) {
+            $matchingColor = $config['code_couleur'];
         }
     }
 
-    $lastConfig = end($configs);
-    return $lastConfig ? $lastConfig['code_couleur'] : null;
+    return $matchingColor;
 }
 
 $result = fetchJson($apiUrl);
