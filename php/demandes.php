@@ -69,7 +69,7 @@ function computeDtBetween(array $entries, $id1, $id2) {
     }
 
     if ($pos1 === null) {
-        return 0.0;
+        return null;
     }
 
     for ($i = $pos1 + 1; $i < $count; $i++) {
@@ -80,18 +80,57 @@ function computeDtBetween(array $entries, $id1, $id2) {
     }
 
     if ($pos2 === null) {
-        return 0.0;
+        return null;
     }
 
-    $total = 0.0;
-    for ($i = $pos1 + 1; $i <= $pos2; $i++) {
-        $value = $entries[$i]['dt'];
-        if ($value !== null) {
-            $total += (float) $value;
+    $start = new DateTimeImmutable($entries[$pos1]['date']);
+    $end = new DateTimeImmutable($entries[$pos2]['date']);
+
+    if ($end < $start) {
+        return null;
+    }
+
+    $totalMinutes = 0;
+    $workStart = 8;
+    $workEnd = 16;
+
+    $currentDate = $start->setTime(0, 0);
+    $lastDate = $end->setTime(0, 0);
+
+    while ($currentDate <= $lastDate) {
+        $dayOfWeek = (int) $currentDate->format('N');
+        if ($dayOfWeek < 6) {
+            $dayStart = $currentDate->setTime($workStart, 0);
+            $dayEnd = $currentDate->setTime($workEnd, 0);
+
+            $rangeStart = $start > $dayStart ? $start : $dayStart;
+            $rangeEnd = $end < $dayEnd ? $end : $dayEnd;
+
+            if ($rangeEnd > $rangeStart) {
+                $totalMinutes += (int) (($rangeEnd->getTimestamp() - $rangeStart->getTimestamp()) / 60);
+            }
+        }
+
+        $currentDate = $currentDate->modify('+1 day');
+    }
+
+    return $totalMinutes;
+}
+
+function pickColorForDt(array $configs, $dtValue) {
+    if ($dtValue === null) {
+        return null;
+    }
+
+    foreach ($configs as $config) {
+        $limit = (float) $config['dt'];
+        if ($dtValue <= $limit) {
+            return $config['code_couleur'];
         }
     }
 
-    return $total;
+    $lastConfig = end($configs);
+    return $lastConfig ? $lastConfig['code_couleur'] : null;
 }
 
 $result = fetchJson($apiUrl);
@@ -99,6 +138,7 @@ $error = $result['error'];
 $demandes = $result['data'];
 $dbError = null;
 $configRules = [];
+$configByPair = [];
 $statutMap = [];
 $demandeStatutHistory = [];
 
@@ -113,6 +153,13 @@ if (!$error && !empty($demandes)) {
 
         $configRules = $pdo->query('select id1, id2, dt, code_couleur from config order by id1, id2, dt')
             ->fetchAll();
+        foreach ($configRules as $rule) {
+            $key = $rule['id1'] . '-' . $rule['id2'];
+            if (!isset($configByPair[$key])) {
+                $configByPair[$key] = [];
+            }
+            $configByPair[$key][] = $rule;
+        }
 
         $demandeIds = array_values(array_filter(array_map(function ($demande) {
             return isset($demande['id']) ? (int) $demande['id'] : null;
@@ -191,21 +238,23 @@ if (!$error && !empty($demandes)) {
                             : [];
                         $ruleItems = [];
 
-                        foreach ($configRules as $rule) {
-                            $id1 = (int) $rule['id1'];
-                            $id2 = (int) $rule['id2'];
-                            $dtSeuil = (float) $rule['dt'];
+                        foreach ($configByPair as $pairKey => $rules) {
+                            $parts = explode('-', $pairKey, 2);
+                            $id1 = (int) $parts[0];
+                            $id2 = (int) $parts[1];
                             $dtCalc = computeDtBetween($history, $id1, $id2);
+                            $color = pickColorForDt($rules, $dtCalc);
+                            if ($color === null) {
+                                continue;
+                            }
 
                             $label1 = $statutMap[$id1] ?? ('statut ' . $id1);
                             $label2 = $statutMap[$id2] ?? ('statut ' . $id2);
                             $ruleItems[] = sprintf(
-                                '[%s -> %s] => %s (dt: %s min, seuil: %s min)',
+                                '[%s -> %s] => %s',
                                 $label1,
                                 $label2,
-                                $rule['code_couleur'],
-                                rtrim(rtrim(number_format($dtCalc, 2, '.', ''), '0'), '.'),
-                                rtrim(rtrim(number_format($dtSeuil, 2, '.', ''), '0'), '.')
+                                $color
                             );
                         }
                     ?>

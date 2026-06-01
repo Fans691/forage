@@ -1,4 +1,5 @@
 insert into client(nom, adresse, contact, mdp) values ('Mbola', '123 Main St', '555-1234', 'talenta');
+insert into client(nom, adresse, contact, mdp) values ('Rasoa', '456 Elm St', '555-5678', 'Rabe');
 -- Regions
 insert into region(id, libelle) values (1, 'Analamanga');
 insert into region(id, libelle) values (2, 'Vakinankaratra');
@@ -57,6 +58,16 @@ insert into statut(id, libelle) values (6, 'demande forage refuse');
 insert into statut(id, libelle) values (7, 'demande travail cree');
 insert into statut(id, libelle) values (8, 'demande travail termine');
 
+
+create table config (
+    id1 integer,
+    id2 integer,
+    dt integer,
+    code_couleur varchar(20),
+    PRIMARY KEY (id1, id2, dt)
+);
 TRUNCATE TABLE config RESTART IDENTITY CASCADE;
 insert into config(id1, id2, dt, code_couleur) values (1, 2, 300, 'vert');
 insert into config(id1, id2, dt, code_couleur) values (1, 2, 600, 'rouge');
+insert into config(id1, id2, dt, code_couleur) values (1, 4, 400, 'vert');
+insert into config(id1, id2, dt, code_couleur) values (1, 4, 800, 'rouge');

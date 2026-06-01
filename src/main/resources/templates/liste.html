@@ -45,9 +45,13 @@
                     <button type="submit">Supprimer</button>
                 </form>
                 <form th:action="@{/demandes/{id}/valider(id=${demande.id})}" method="post" style="display:inline;">
+                    <input type="date" name="date" required>
+                    <input type="time" name="time" required>
                     <button type="submit">Accepter etude</button>
                 </form>
                 <form th:action="@{/demandes/{id}/refuser(id=${demande.id})}" method="post" style="display:inline;">
+                    <input type="date" name="date" required>
+                    <input type="time" name="time" required>
                     <button type="submit">Refuser etude</button>
                 </form>
                 <a th:if="${devisDemandeIds.contains(demande.id)}" th:href="@{/demandes/{id}/devis(id=${demande.id})}">Voir devis</a>

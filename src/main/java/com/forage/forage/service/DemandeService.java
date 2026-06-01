@@ -75,7 +75,7 @@ public class DemandeService {
     public Demande createDemande(Client client, Commune commune, LocalDateTime dateDemande, String lieu) {
         Demande demande = new Demande(client, commune, "", dateDemande, lieu);
         Demande savedDemande = dr.save(demande);
-        enregistrerStatut(savedDemande, STATUT_DEMANDE_ETUDE_CREE);
+        enregistrerStatut(savedDemande, STATUT_DEMANDE_ETUDE_CREE, dateDemande != null ? dateDemande : LocalDateTime.now());
         return savedDemande;
     }
 
@@ -88,10 +88,26 @@ public class DemandeService {
     }
 
     @Transactional
+    public void marquerRefuseAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_REFUSE, dateStatut != null ? dateStatut : LocalDateTime.now());
+        }
+    }
+
+    @Transactional
     public void marquerValide(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
             enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_ACCEPTE);
+        }
+    }
+
+    @Transactional
+    public void marquerValideAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_ACCEPTE, dateStatut != null ? dateStatut : LocalDateTime.now());
         }
     }
 
@@ -112,10 +128,27 @@ public class DemandeService {
 	}
 
     @Transactional
+    public void marquerForageAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            LocalDateTime dateFinale = dateStatut != null ? dateStatut : LocalDateTime.now();
+            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_CREE, dateFinale);
+        }
+    }
+
+    @Transactional
     public void marquerForageAccepte(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
             enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_ACCEPTE);
+        }
+    }
+
+    @Transactional
+    public void marquerForageAccepteAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_ACCEPTE, dateStatut != null ? dateStatut : LocalDateTime.now());
         }
     }
 
@@ -128,6 +161,14 @@ public class DemandeService {
     }
 
     @Transactional
+    public void marquerForageRefuseAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_REFUSE, dateStatut != null ? dateStatut : LocalDateTime.now());
+        }
+    }
+
+    @Transactional
     public void marquerTravailCree(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
@@ -136,10 +177,26 @@ public class DemandeService {
     }
 
     @Transactional
+    public void marquerTravailCreeAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_TRAVAIL_CREE, dateStatut != null ? dateStatut : LocalDateTime.now());
+        }
+    }
+
+    @Transactional
     public void marquerTravailTermine(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
             enregistrerStatut(demande, STATUT_DEMANDE_TRAVAIL_TERMINE);
+        }
+    }
+
+    @Transactional
+    public void marquerTravailTermineAvecDate(Long demandeId, LocalDateTime dateStatut) {
+        Demande demande = getDemandeById(demandeId);
+        if (demande != null) {
+            enregistrerStatut(demande, STATUT_DEMANDE_TRAVAIL_TERMINE, dateStatut != null ? dateStatut : LocalDateTime.now());
         }
     }
 

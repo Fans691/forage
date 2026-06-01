@@ -202,7 +202,8 @@ public class AccueilController {
             return "redirect:/";
         }
 
-        ds.createDemande(client, commune, buildDateTime(dateDemande, timeDemande), lieu);
+        LocalDateTime dateSaisie = buildDateTime(dateDemande, timeDemande);
+        ds.createDemande(client, commune, dateSaisie, lieu);
         redirectAttributes.addFlashAttribute("message", "Demande envoyée avec succès.");
         return "redirect:/demandes";
     }
@@ -273,8 +274,9 @@ public class AccueilController {
             return "redirect:/demandes";
         }
 
-        dvs.saveForDemande(demande, objets, montants, qtes, buildDateTime(dateDevis, timeDevis));
-        ds.marquerForage(id);
+        LocalDateTime dateDevisFinale = buildDateTime(dateDevis, timeDevis);
+        dvs.saveForDemande(demande, objets, montants, qtes, dateDevisFinale);
+        ds.marquerForageAvecDate(id, dateDevisFinale);
         redirectAttributes.addFlashAttribute("message", "Devis enregistré avec succès.");
         return "redirect:/demandes/" + id + "/devis";
     }
@@ -300,52 +302,69 @@ public class AccueilController {
     }
 
     @PostMapping("/demandes/{id}/refuser")
-    public String refuserDemande(@PathVariable("id") Long id) {
-        ds.marquerRefuse(id);
+    public String refuserDemande(@PathVariable("id") Long id,
+                                 @RequestParam(name = "date", required = false) LocalDate date,
+                                 @RequestParam(name = "time", required = false) String time,
+                                 RedirectAttributes redirectAttributes) {
+        ds.marquerRefuseAvecDate(id, buildDateTime(date, time));
+        redirectAttributes.addFlashAttribute("message", "Statut refusé avec date.");
         return "redirect:/demandes";
     }
 
     @PostMapping("/demandes/{id}/valider")
-    public String validerDemande(@PathVariable("id") Long id) {
-        ds.marquerEtude(id);
+    public String validerDemande(@PathVariable("id") Long id,
+                                 @RequestParam(name = "date", required = false) LocalDate date,
+                                 @RequestParam(name = "time", required = false) String time,
+                                 RedirectAttributes redirectAttributes) {
+        ds.marquerValideAvecDate(id, buildDateTime(date, time));
+        redirectAttributes.addFlashAttribute("message", "Statut validé avec date.");
         return "redirect:/demandes";
     }
 
     @PostMapping("/demandes/{id}/devis/accepter")
-    public String accepterDevisDemande(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String accepterDevisDemande(@PathVariable("id") Long id,
+                                       @RequestParam(name = "date", required = false) LocalDate date,
+                                       @RequestParam(name = "time", required = false) String time,
+                                       RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
         if (demande == null) {
             redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
             return "redirect:/demandes";
         }
 
-        ds.marquerTravailCree(id);
+        ds.marquerTravailCreeAvecDate(id, buildDateTime(date, time));
         redirectAttributes.addFlashAttribute("message", "Devis validés. Travail créé.");
         return "redirect:/demandes/" + id + "/devis";
     }
 
     @PostMapping("/demandes/{id}/devis/refuser")
-    public String refuserDevisDemande(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String refuserDevisDemande(@PathVariable("id") Long id,
+                                      @RequestParam(name = "date", required = false) LocalDate date,
+                                      @RequestParam(name = "time", required = false) String time,
+                                      RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
         if (demande == null) {
             redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
             return "redirect:/demandes";
         }
 
-        ds.marquerForageRefuse(id);
+        ds.marquerForageRefuseAvecDate(id, buildDateTime(date, time));
         redirectAttributes.addFlashAttribute("message", "Devis refusés.");
         return "redirect:/demandes/" + id + "/devis";
     }
 
     @PostMapping("/demandes/{id}/travail/terminer")
-    public String terminerTravail(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public String terminerTravail(@PathVariable("id") Long id,
+                                  @RequestParam(name = "date", required = false) LocalDate date,
+                                  @RequestParam(name = "time", required = false) String time,
+                                  RedirectAttributes redirectAttributes) {
         Demande demande = ds.getDemandeById(id);
         if (demande == null) {
             redirectAttributes.addFlashAttribute("message", "Demande introuvable.");
             return "redirect:/demandes";
         }
 
-        ds.marquerTravailTermine(id);
+        ds.marquerTravailTermineAvecDate(id, buildDateTime(date, time));
         redirectAttributes.addFlashAttribute("message", "Travail terminé.");
         return "redirect:/demandes/" + id + "/devis";
     }
@@ -371,7 +390,7 @@ public class AccueilController {
     }
 
     private LocalDateTime buildDateTime(LocalDate dateDemande, String timeDemande) {
-        if (dateDemande == null) return null;
+        if (dateDemande == null) return LocalDateTime.now();
         LocalTime time = LocalTime.MIDNIGHT;
         if (timeDemande != null && !timeDemande.isBlank()) {
             try {
