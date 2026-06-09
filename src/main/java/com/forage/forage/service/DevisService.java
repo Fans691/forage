@@ -49,7 +49,6 @@ public class DevisService {
             List<Double> montants,
             List<Double> qtes,
             LocalDateTime dateDevis) {
-        // create and save a Devis for each provided description/montant pair
         int count = Math.min(
                 descriptions == null ? 0 : descriptions.size(),
                 montants == null ? 0 : montants.size());
