@@ -28,6 +28,9 @@ public class DemandeStatut {
 	@Column(name="DT")
 	private Double dt;
 
+	@Column(name = "duree_travaille_total")
+	private Double dureeTravailleTotal;
+
 	public DemandeStatut() {}
 
 	public DemandeStatut(Statut statut, Demande demande, String description, LocalDateTime date, Double dt) {
@@ -59,5 +62,13 @@ public class DemandeStatut {
 
 	public void setDt(Double dt) {
 		this.dt = dt;
+	}
+
+	public Double getDureeTravailleTotal() {
+		return dureeTravailleTotal;
+	}
+
+	public void setDureeTravailleTotal(Double dureeTravailleTotal) {
+		this.dureeTravailleTotal = dureeTravailleTotal;
 	}
 }

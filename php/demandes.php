@@ -133,6 +133,14 @@ function pickColorForDt(array $configs, $dtValue) {
     return $matchingColor;
 }
 
+function formatHours($value) {
+    if ($value === null || $value === '') {
+        return '';
+    }
+
+    return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.') . ' h';
+}
+
 $result = fetchJson($apiUrl);
 $error = $result['error'];
 $demandes = $result['data'];
@@ -141,6 +149,7 @@ $configRules = [];
 $configByPair = [];
 $statutMap = [];
 $demandeStatutHistory = [];
+$dureeTravailleTotalByDemande = [];
 
 if (!$error && !empty($demandes)) {
     try {
@@ -168,7 +177,7 @@ if (!$error && !empty($demandes)) {
         if (!empty($demandeIds)) {
             $placeholders = buildPlaceholders(count($demandeIds));
             $stmt = $pdo->prepare(
-                'select id_demande, id_statut, date, dt from demande_statut where id_demande in (' . $placeholders . ') order by id_demande, date'
+                'select id_demande, id_statut, date, dt, duree_travaille_total from demande_statut where id_demande in (' . $placeholders . ') order by id_demande, date'
             );
             $stmt->execute($demandeIds);
             $rows = $stmt->fetchAll();
@@ -183,6 +192,10 @@ if (!$error && !empty($demandes)) {
                     'date' => $row['date'],
                     'dt' => $row['dt'],
                 ];
+
+                if ($row['duree_travaille_total'] !== null) {
+                    $dureeTravailleTotalByDemande[$demandeId] = $row['duree_travaille_total'];
+                }
             }
         }
     } catch (Throwable $ex) {
@@ -207,7 +220,7 @@ if (!$error && !empty($demandes)) {
     </style>
 </head>
 <body>
-<h1>Liste des demandes</h1>
+<h1>Liste des demandes | ETU004043</h1>
 
 <?php if ($error): ?>
     <div class="error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
@@ -226,6 +239,7 @@ if (!$error && !empty($demandes)) {
                     <th>Date</th>
                     <th>Lieu</th>
                     <th>Statut</th>
+                    <th>Duree travail total</th>
                     <th>Regles</th>
                 </tr>
             </thead>
@@ -236,6 +250,9 @@ if (!$error && !empty($demandes)) {
                         $history = $demandeId !== null && isset($demandeStatutHistory[$demandeId])
                             ? $demandeStatutHistory[$demandeId]
                             : [];
+                        $dureeTravailleTotal = $demandeId !== null && isset($dureeTravailleTotalByDemande[$demandeId])
+                            ? $dureeTravailleTotalByDemande[$demandeId]
+                            : null;
                         $ruleItems = [];
 
                         foreach ($configByPair as $pairKey => $rules) {
@@ -265,6 +282,7 @@ if (!$error && !empty($demandes)) {
                         <td><?php echo htmlspecialchars($demande['dateDemande'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($demande['lieu'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($demande['statutActuelLibelle'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars(formatHours($dureeTravailleTotal), ENT_QUOTES, 'UTF-8'); ?></td>
                         <td>
                             <?php if (empty($ruleItems)): ?>
                                 <span>Aucune configuration.</span>

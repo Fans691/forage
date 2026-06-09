@@ -230,9 +230,19 @@ public class DemandeService {
     private void recalculerDtStatuts(Long demandeId) {
         List<DemandeStatut> historique = dsr.findByDemandeIdOrderByDateAscIdAsc(demandeId);
         LocalDateTime datePrecedente = null;
+        double totalMinutes = 0.0;
 
         for (DemandeStatut demandeStatut : historique) {
-            demandeStatut.setDt(computeDtMinutes(datePrecedente, demandeStatut.getDate()));
+            double dtMinutes = computeDtMinutes(datePrecedente, demandeStatut.getDate());
+            demandeStatut.setDt(dtMinutes);
+            demandeStatut.setDureeTravailleTotal(null);
+            totalMinutes += dtMinutes;
+
+            if (demandeStatut.getStatut() != null
+                    && STATUT_DEMANDE_TRAVAIL_TERMINE.equalsIgnoreCase(demandeStatut.getStatut().getLibelle())) {
+                demandeStatut.setDureeTravailleTotal(totalMinutes / 60.0);
+            }
+
             datePrecedente = demandeStatut.getDate();
         }
 
