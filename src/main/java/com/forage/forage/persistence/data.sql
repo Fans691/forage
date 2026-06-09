@@ -72,3 +72,5 @@ insert into config(id1, id2, dt, code_couleur) values (1, 2, 300, 'vert');
 insert into config(id1, id2, dt, code_couleur) values (1, 2, 600, 'rouge');
 insert into config(id1, id2, dt, code_couleur) values (1, 4, 400, 'vert');
 insert into config(id1, id2, dt, code_couleur) values (1, 4, 800, 'rouge');
+
+update demande_statut set date='2026-06-02 16:00:00' where id=2;

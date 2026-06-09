@@ -217,12 +217,26 @@ public class DemandeService {
         Statut statut = sr.findByLibelleIgnoreCase(libelle)
                 .orElseGet(() -> sr.save(new Statut(libelle)));
 
-        DemandeStatut demandeStatut = new DemandeStatut(statut, demande, libelle, dateStatut, 0.0);
-        DemandeStatut precedent = dsr.findTopByDemandeIdAndDateLessThanEqualOrderByDateDesc(demande.getId(), dateStatut)
-                .orElse(null);
-        double dtMinutes = computeDtMinutes(precedent == null ? null : precedent.getDate(), dateStatut);
-        demandeStatut.setDt(dtMinutes);
+        DemandeStatut demandeStatut = dsr.findTopByDemandeIdAndStatutIdOrderByIdAsc(demande.getId(), statut.getId())
+                .orElseGet(() -> new DemandeStatut(statut, demande, libelle, dateStatut, 0.0));
+        demandeStatut.setStatut(statut);
+        demandeStatut.setDemande(demande);
+        demandeStatut.setDescription(libelle);
+        demandeStatut.setDate(dateStatut);
         dsr.save(demandeStatut);
+        recalculerDtStatuts(demande.getId());
+    }
+
+    private void recalculerDtStatuts(Long demandeId) {
+        List<DemandeStatut> historique = dsr.findByDemandeIdOrderByDateAscIdAsc(demandeId);
+        LocalDateTime datePrecedente = null;
+
+        for (DemandeStatut demandeStatut : historique) {
+            demandeStatut.setDt(computeDtMinutes(datePrecedente, demandeStatut.getDate()));
+            datePrecedente = demandeStatut.getDate();
+        }
+
+        dsr.saveAll(historique);
     }
 
     private double computeDtMinutes(LocalDateTime previous, LocalDateTime current) {
