@@ -59,19 +59,53 @@ insert into statut(id, libelle) values (7, 'demande travail cree');
 insert into statut(id, libelle) values (8, 'demande travail termine');
 
 
-create table config (
+create table if not exists config (
+    id bigserial primary key,
     id1 integer,
     id2 integer,
-    dt integer,
-    code_couleur varchar(20),
-    PRIMARY KEY (id1, id2, dt)
+    dt1 integer,
+    dt2 integer,
+    code_couleur varchar(20)
 );
 
+alter table if exists config add column if not exists id bigserial;
+alter table if exists config add column if not exists dt1 integer;
+alter table if exists config add column if not exists dt2 integer;
+
+do $$
+declare
+    constraint_to_drop text;
+begin
+    if exists (
+        select 1
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = 'config'
+          and column_name = 'dt'
+    ) then
+        for constraint_to_drop in
+            select distinct tc.constraint_name
+            from information_schema.table_constraints tc
+            join information_schema.key_column_usage kcu
+              on tc.constraint_schema = kcu.constraint_schema
+             and tc.constraint_name = kcu.constraint_name
+             and tc.table_name = kcu.table_name
+            where tc.table_schema = 'public'
+              and tc.table_name = 'config'
+              and kcu.column_name = 'dt'
+        loop
+            execute format('alter table config drop constraint if exists %I', constraint_to_drop);
+        end loop;
+
+        alter table config drop column if exists dt;
+    end if;
+end $$;
+
 TRUNCATE TABLE config RESTART IDENTITY CASCADE;
-insert into config(id1, id2, dt, code_couleur) values (1, 2, 300, 'vert');
-insert into config(id1, id2, dt, code_couleur) values (1, 2, 600, 'rouge');
-insert into config(id1, id2, dt, code_couleur) values (1, 4, 400, 'vert');
-insert into config(id1, id2, dt, code_couleur) values (1, 4, 800, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 2, 0, 300, 'vert');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 2, 301, 600, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 4, 0, 400, 'vert');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 4, 401, 800, 'rouge');
 
 alter table if exists demande_statut add column if not exists duree_travaille_total double precision;
 

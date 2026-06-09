@@ -122,15 +122,15 @@ function pickColorForDt(array $configs, $dtValue) {
         return null;
     }
 
-    $matchingColor = null;
     foreach ($configs as $config) {
-        $limit = (float) $config['dt'];
-        if ($dtValue > $limit) {
-            $matchingColor = $config['code_couleur'];
+        $min = (float) $config['dt1'];
+        $max = (float) $config['dt2'];
+        if ($dtValue >= $min && $dtValue <= $max) {
+            return $config['code_couleur'];
         }
     }
 
-    return $matchingColor;
+    return null;
 }
 
 function formatHours($value) {
@@ -160,7 +160,7 @@ if (!$error && !empty($demandes)) {
             $statutMap[(int) $row['id']] = $row['libelle'];
         }
 
-        $configRules = $pdo->query('select id1, id2, dt, code_couleur from config order by id1, id2, dt')
+        $configRules = $pdo->query('select id1, id2, dt1, dt2, code_couleur from config order by id1, id2, dt1, dt2')
             ->fetchAll();
         foreach ($configRules as $rule) {
             $key = $rule['id1'] . '-' . $rule['id2'];
