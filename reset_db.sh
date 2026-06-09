@@ -113,16 +113,6 @@ BEGIN
     END IF;
 END $$;
 
-INSERT INTO config(id1, id2, dt1, dt2, code_couleur)
-SELECT *
-FROM (VALUES
-    (1, 2, 0, 300, 'vert'),
-    (1, 2, 301, 600, 'rouge'),
-    (1, 4, 0, 400, 'vert'),
-    (1, 4, 401, 800, 'rouge')
-) AS defaults(id1, id2, dt1, dt2, code_couleur)
-WHERE NOT EXISTS (SELECT 1 FROM config);
-
 DO $$
 DECLARE
     truncate_sql text;
