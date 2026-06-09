@@ -49,14 +49,13 @@ insert into commune(id, libelle, id_district) values (23, 'Andapa-ville', 12);
 insert into commune(id, libelle, id_district) values (24, 'Ambodivoahangy', 12);
 
 TRUNCATE TABLE statut RESTART IDENTITY CASCADE;
-insert into statut(id, libelle) values (1, 'demande etude cree');
-insert into statut(id, libelle) values (2, 'demande etude accepte');
-insert into statut(id, libelle) values (3, 'demande etude refuse');
+insert into statut(id, libelle) values (1, 'dossier cree');
+insert into statut(id, libelle) values (2, 'demande etude cree');
+insert into statut(id, libelle) values (3, 'demande etude accepte');
 insert into statut(id, libelle) values (4, 'demande forage cree');
 insert into statut(id, libelle) values (5, 'demande forage accepte');
-insert into statut(id, libelle) values (6, 'demande forage refuse');
-insert into statut(id, libelle) values (7, 'demande travail cree');
-insert into statut(id, libelle) values (8, 'demande travail termine');
+insert into statut(id, libelle) values (6, 'demande travail cree');
+insert into statut(id, libelle) values (7, 'demande travail termine');
 
 
 create table if not exists config (
@@ -102,11 +101,20 @@ begin
 end $$;
 
 TRUNCATE TABLE config RESTART IDENTITY CASCADE;
-insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 2, 0, 300, 'vert');
-insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 2, 301, 600, 'rouge');
-insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 4, 0, 400, 'vert');
-insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 4, 401, 800, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 2, 480, 600, 'jaune');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (1, 2, 1440, 2880, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (2, 3, 240, 300, 'jaune');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (2, 3, 360, 480, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (3, 4, 60, 120, 'jaune');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (3, 4, 180, 240, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (4, 5, 240, 480, 'jaune');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (4, 5, 600, 720, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (5, 6, 1200, 1800, 'jaune');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (5, 6, 1801, 3600, 'rouge');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (6, 7, 3600, 4200, 'jaune');
+insert into config(id1, id2, dt1, dt2, code_couleur) values (6, 7, 4800, 6000, 'rouge');
 
 alter table if exists demande_statut add column if not exists duree_travaille_total double precision;
 
 update demande_statut set date='2026-06-02 16:00:00' where id=2;
+

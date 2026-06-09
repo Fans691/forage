@@ -45,11 +45,6 @@
         <input type="time" name="time" required>
         <button type="submit">Valider les devis</button>
     </form>
-    <form th:action="@{/demandes/{id}/devis/refuser(id=${demande.id})}" method="post" style="display:inline;">
-        <input type="date" name="date" required>
-        <input type="time" name="time" required>
-        <button type="submit">Refuser les devis</button>
-    </form>
     <form th:action="@{/demandes/{id}/travail/terminer(id=${demande.id})}" method="post" style="display:inline;">
         <input type="date" name="date" required>
         <input type="time" name="time" required>

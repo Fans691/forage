@@ -62,15 +62,7 @@ public class AccueilController {
 
     @GetMapping("/statut")
     public String pageStatut(Model model) {
-        model.addAttribute("statuts", List.of(
-                "demande etude cree",
-                "demande etude accepte",
-                "demande etude refuse",
-                "demande forage cree",
-                "demande forage accepte",
-                "demande forage refuse",
-                "demande travail cree",
-                "demande travail termine"));
+        model.addAttribute("statuts", ds.getStatutsValides());
         return "statut";
     }
 
@@ -81,15 +73,7 @@ public class AccueilController {
             @RequestParam("date") LocalDate date,
             @RequestParam("time") String time,
             Model model) {
-        model.addAttribute("statuts", List.of(
-            "demande etude cree",
-            "demande etude accepte",
-            "demande etude refuse",
-            "demande forage cree",
-            "demande forage accepte",
-            "demande forage refuse",
-            "demande travail cree",
-            "demande travail termine"));
+        model.addAttribute("statuts", ds.getStatutsValides());
 
         Long demandeId = parseDemandeIdFromReference(ref);
         if (demandeId == null) {
@@ -104,7 +88,7 @@ public class AccueilController {
         }
 
         boolean updated = ds.changerStatutAvecDate(demandeId, statut, dateStatut);
-        model.addAttribute("message", updated ? "Statut mis a jour." : "Demande introuvable.");
+        model.addAttribute("message", updated ? "Statut mis a jour." : "Demande introuvable ou statut invalide.");
         return "statut";
     }
 
@@ -143,7 +127,7 @@ public class AccueilController {
 
         boolean updated = ds.changerStatutAvecDate(demandeId, statut, dateStatut);
         if (!updated) {
-            return Map.of("ok", false, "message", "Demande introuvable.", "ref", ref);
+            return Map.of("ok", false, "message", "Demande introuvable ou statut invalide.", "ref", ref);
         }
 
         return Map.of("ok", true, "message", "Statut mis a jour.", "ref", ref, "statut", statut, "date", date);
@@ -306,8 +290,7 @@ public class AccueilController {
                                  @RequestParam(name = "date", required = false) LocalDate date,
                                  @RequestParam(name = "time", required = false) String time,
                                  RedirectAttributes redirectAttributes) {
-        ds.marquerRefuseAvecDate(id, buildDateTime(date, time));
-        redirectAttributes.addFlashAttribute("message", "Statut refusé avec date.");
+        redirectAttributes.addFlashAttribute("message", "Le statut refusé n'est plus disponible.");
         return "redirect:/demandes";
     }
 
@@ -348,8 +331,7 @@ public class AccueilController {
             return "redirect:/demandes";
         }
 
-        ds.marquerForageRefuseAvecDate(id, buildDateTime(date, time));
-        redirectAttributes.addFlashAttribute("message", "Devis refusés.");
+        redirectAttributes.addFlashAttribute("message", "Le statut refusé n'est plus disponible.");
         return "redirect:/demandes/" + id + "/devis";
     }
 

@@ -21,14 +21,21 @@ import com.forage.forage.repository.StatutRepository;
 
 @Service
 public class DemandeService {
+    private static final String STATUT_DOSSIER_CREE = "dossier cree";
     private static final String STATUT_DEMANDE_ETUDE_CREE = "demande etude cree";
     private static final String STATUT_DEMANDE_ETUDE_ACCEPTE = "demande etude accepte";
-    private static final String STATUT_DEMANDE_ETUDE_REFUSE = "demande etude refuse";
     private static final String STATUT_DEMANDE_FORAGE_CREE = "demande forage cree";
     private static final String STATUT_DEMANDE_FORAGE_ACCEPTE = "demande forage accepte";
-    private static final String STATUT_DEMANDE_FORAGE_REFUSE = "demande forage refuse";
     private static final String STATUT_DEMANDE_TRAVAIL_CREE = "demande travail cree";
     private static final String STATUT_DEMANDE_TRAVAIL_TERMINE = "demande travail termine";
+    private static final List<String> STATUTS_VALIDES = List.of(
+            STATUT_DOSSIER_CREE,
+            STATUT_DEMANDE_ETUDE_CREE,
+            STATUT_DEMANDE_ETUDE_ACCEPTE,
+            STATUT_DEMANDE_FORAGE_CREE,
+            STATUT_DEMANDE_FORAGE_ACCEPTE,
+            STATUT_DEMANDE_TRAVAIL_CREE,
+            STATUT_DEMANDE_TRAVAIL_TERMINE);
 
     protected final DemandeRepository dr;
     protected final DemandeStatutRepository dsr;
@@ -75,24 +82,8 @@ public class DemandeService {
     public Demande createDemande(Client client, Commune commune, LocalDateTime dateDemande, String lieu) {
         Demande demande = new Demande(client, commune, "", dateDemande, lieu);
         Demande savedDemande = dr.save(demande);
-        enregistrerStatut(savedDemande, STATUT_DEMANDE_ETUDE_CREE, dateDemande != null ? dateDemande : LocalDateTime.now());
+        enregistrerStatut(savedDemande, STATUT_DOSSIER_CREE, dateDemande != null ? dateDemande : LocalDateTime.now());
         return savedDemande;
-    }
-
-    @Transactional
-    public void marquerRefuse(Long demandeId) {
-        Demande demande = getDemandeById(demandeId);
-        if (demande != null) {
-            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_REFUSE);
-        }
-    }
-
-    @Transactional
-    public void marquerRefuseAvecDate(Long demandeId, LocalDateTime dateStatut) {
-        Demande demande = getDemandeById(demandeId);
-        if (demande != null) {
-            enregistrerStatut(demande, STATUT_DEMANDE_ETUDE_REFUSE, dateStatut != null ? dateStatut : LocalDateTime.now());
-        }
     }
 
     @Transactional
@@ -153,22 +144,6 @@ public class DemandeService {
     }
 
     @Transactional
-    public void marquerForageRefuse(Long demandeId) {
-        Demande demande = getDemandeById(demandeId);
-        if (demande != null) {
-            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_REFUSE);
-        }
-    }
-
-    @Transactional
-    public void marquerForageRefuseAvecDate(Long demandeId, LocalDateTime dateStatut) {
-        Demande demande = getDemandeById(demandeId);
-        if (demande != null) {
-            enregistrerStatut(demande, STATUT_DEMANDE_FORAGE_REFUSE, dateStatut != null ? dateStatut : LocalDateTime.now());
-        }
-    }
-
-    @Transactional
     public void marquerTravailCree(Long demandeId) {
         Demande demande = getDemandeById(demandeId);
         if (demande != null) {
@@ -204,9 +179,14 @@ public class DemandeService {
     public boolean changerStatutAvecDate(Long demandeId, String libelle, LocalDateTime dateStatut) {
         Demande demande = getDemandeById(demandeId);
         if (demande == null) return false;
+        if (!isStatutValide(libelle)) return false;
         LocalDateTime dateFinale = dateStatut != null ? dateStatut : LocalDateTime.now();
         enregistrerStatut(demande, libelle, dateFinale);
         return true;
+    }
+
+    public List<String> getStatutsValides() {
+        return STATUTS_VALIDES;
     }
 
     private void enregistrerStatut(Demande demande, String libelle) {
@@ -215,7 +195,7 @@ public class DemandeService {
 
     private void enregistrerStatut(Demande demande, String libelle, LocalDateTime dateStatut) {
         Statut statut = sr.findByLibelleIgnoreCase(libelle)
-                .orElseGet(() -> sr.save(new Statut(libelle)));
+                .orElseThrow(() -> new IllegalArgumentException("Statut inconnu: " + libelle));
 
         DemandeStatut demandeStatut = dsr.findTopByDemandeIdAndStatutIdOrderByIdAsc(demande.getId(), statut.getId())
                 .orElseGet(() -> new DemandeStatut(statut, demande, libelle, dateStatut, 0.0));
@@ -247,6 +227,11 @@ public class DemandeService {
         }
 
         dsr.saveAll(historique);
+    }
+
+    private boolean isStatutValide(String libelle) {
+        return libelle != null && STATUTS_VALIDES.stream()
+                .anyMatch(statut -> statut.equalsIgnoreCase(libelle));
     }
 
     private double computeDtMinutes(LocalDateTime previous, LocalDateTime current) {
